@@ -1,7 +1,9 @@
 # Django settings for dashboard_project project.
+import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -29,7 +31,7 @@ ALLOWED_HOSTS = []
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = 'America/Los_Angeles'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -60,8 +62,8 @@ MEDIA_URL = ''
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
-# Example: "/var/www/example.com/static/"
-STATIC_ROOT = ''
+# Example: "/var/www/example.com/static/""
+STATIC_ROOT = os.path.join(BASEDIR,"sitestatic")
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
@@ -72,6 +74,8 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    os.path.join(os.path.dirname(BASEDIR),"bootstrap"),
+    os.path.join(os.path.dirname(BASEDIR),"jquery"),
 )
 
 # List of finder classes that know how to find static files in

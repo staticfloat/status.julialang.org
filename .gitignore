@@ -1,3 +1,4 @@
 *.pyc
 *.db
 secret_key.py
+sitestatic/

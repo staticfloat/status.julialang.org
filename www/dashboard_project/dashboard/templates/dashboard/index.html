@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+  <head>
+    <title>Julia Ecosystem Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet" media="screen">
+    <link href="{% static "css/jquery.jqplot.min.css" %}" rel="stylesheet" media="screen">
+    <style>
+    	.cell {
+    		background-color: #eee;
+    		border: 1px solid #999;
+    		padding: 5px 5px 5px 5px;
+    		margin: 10px 10px 10px 10px;
+    	}
+
+      .code {
+        border: 1px solid #8d8d8d;
+        padding: 0px 2px 0px 2px;
+        background-color: #ccc;
+      }
+
+      .fresh {
+        color: green;
+      }
+
+      .stale {
+        color: orange;
+      }
+
+      .frozen {
+        color: red;
+        font-weight: bold;
+      }
+
+      .graph {
+        height:200px;
+        width: 100%;
+      }
+
+      /* I don't like that dashed underline */
+      abbr[title] {
+        border-bottom: 0px;
+      }
+  	</style>
+    <script src="{% static "js/jquery.min.js" %}" type="text/javascript"></script>
+  	<script src="{% static "js/bootstrap.min.js" %}" type="text/javascript"></script>
+  	<script src="{% static "js/jquery.timeago.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/jquery.jqplot.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/jqplot/jqplot.pointLabels.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/jqplot/jqplot.barRenderer.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/jqplot/jqplot.categoryAxisRenderer.min.js" %}" type="text/javascript"></script>
+
+  	<script type="text/javascript">
+  		$(document).ready(function() {
+        // We're going to start a timer that will update the data every minute
+        update();
+        setInterval( update, 60*1000 )
+  		});
+
+      // Santize a DOM selector so that we aren't using invalid characters
+      function sanitize(selector) {
+        if( selector )
+          return selector.replace(/[ +\/.]/g,'_')
+        return selector
+      }
+
+      var resizeHandles = {}
+
+      // Draw a graph for the Travis Julia tests to illustrate passing/failing tests
+      function update_travis_graph( data, id ) {
+        // We're just going to plot stuff over the last num_days days
+        num_days = 10
+        var pass_bins = new Array(num_days)
+        var fail_bins = new Array(num_days)
+        var xaxis = new Array(num_days)
+
+        base_date = new Date()
+
+        for( i = 0; i<num_days; ++i ) {
+          pass_bins[i] = 0
+          fail_bins[i] = 0
+          d = new Date(base_date.getTime())
+          d.setDate(d.getDate()+i-(num_days-1))
+          xaxis[i] = (d.getMonth()+1) + '/' + d.getDate()
+        }
+
+        // First, sort the data by date
+        data.sort(function(a,b){
+          var ka = new Date(a['build_time']),
+          kb = new Date(b['build_time'])
+          if( ka < kb )
+            return -1
+          if( ka > kb )
+            return 1
+          return 0
+        })
+
+        // We'll histogram by day
+        for( key in data ) {
+          // Get # of milliseconds between now and this build
+          idx = (base_date - new Date(data[key]['build_time']))
+          // Convert that into days
+          idx = (num_days - 1) - Math.round(idx/(1000.0*60*60*24))
+
+          if( idx >= 0 && idx < num_days ) {
+            if( data[key]['result'] == "OK" ) {
+              pass_bins[idx] += 1
+            } else {
+              fail_bins[idx] += 1
+            }
+          }
+        }
+
+        console.log(pass_bins)
+        console.log(fail_bins)
+        console.log(xaxis)
+        $('#'+id).empty()
+        var plot = $.jqplot(id, [pass_bins, fail_bins], {
+          seriesDefaults: {
+            renderer: $.jqplot.BarRenderer,
+            rendererOptions: {
+              barPadding: 4,
+
+            }
+          },
+
+          seriesColors: ["#33cc33", "#ee0000"],
+
+          series:[
+            {label: 'Pass'},
+            {label: 'Fail'},
+          ],
+
+          legend: {
+            show: true,
+          },
+
+          axes: {
+            xaxis: {
+              renderer: $.jqplot.CategoryAxisRenderer,
+              ticks: xaxis,
+            },
+/*
+            yaxis: {
+              tickOptions: {
+                formatString: "%d",
+              },
+            },
+*/
+          },
+        })
+
+        $(window).bind('resize',function(event, ui) {
+          if( id in resizeHandles )
+            clearTimeout( id );
+
+          // Replace the plot with something else
+          $('div#'+id).empty().addClass('code')
+          resizeHandles[id] = setTimeout( function() {
+            plot.replot( {resetAxes: true })
+            $('div#'+id).removeClass('code')
+          }, 50)
+        })
+      }
+
+      // Download new data from the site, write it out to the DOM
+      function update() {
+        // Start with nightly builds
+        $.ajax('get/nightly', {success:function( data ) {
+          // We're given a dict indexed by target
+          for( target in data ) {
+            id = 'nightly-'+sanitize(target)
+
+            // Have we already added this particular target?
+            var abbr = $('#container_nightly').find('abbr#'+id)
+            if( abbr.length != 0 ) {
+              // If so, just update the title and url
+              $(abbr).attr('title', data[target]['build_time'])
+              $('#container_nightly').find('a#'+id)
+            } else {
+              // Otherwise, create the whole DOM mess
+              template =  '<div class="cell">'
+              template +=     target + ' nightly last built: '
+              template +=     '<abbr id="'+id+'" class="timeago" title="' + data[target]['build_time'] + '">'
+              template +=       $.timeago.parse(data[target]).toLocaleString()
+              template +=     '</abbr>'
+              template +=     '<a style="float:right" id="'+id+'" href="'+data[target]['url']+'" target="_blank">download</a>'
+              template += '</div>'
+              $('#container_nightly').append(template)
+            }
+          }
+
+          // Any <abbr> tags with .timeago applied to it will get automagically updated!
+          $('abbr.timeago').timeago();
+        }})
+
+
+        // Then, move on to travis builds
+        $.ajax('get/travis', {success:function( data ) {
+          // We're given a dict indexed by branch
+          for( branch in data ) {
+            // Gotta sanitize out naughty characters
+            id = 'travis-'+sanitize(branch)
+
+            // Do we already have a graph built for this branch?
+            var graph = $('#container_travis').find('div#'+id)
+            if( graph.length == 0 ) {
+              // Otherwise, build the DOM stuffages
+              template =  '<div class="cell" id="cell-'+id+'">'
+              template +=   '<span class="code">' + branch + '</span> test history:'
+              template +=   '<a style="float: right" href="http://github.com/JuliaLang/julia/tree/'+branch+'">GitHub</a>'
+              template +=   '<div class="graph" id="'+id+'"></div>'
+              template += '</div>'
+              $('#container_travis').append(template)
+            }
+            // Now, update the graph for this branch
+            update_travis_graph(data[branch], id)
+          }
+        }})
+      }
+  	</script>
+  </head>
+  <body>
+    <div class="container">
+  		<div class="page-header">
+  			<h1>Julia Ecosystem Status</h1>
+  			<p class="lead">This page tracks the status of various parts of the <a href="http://julialang.org">Julia language</a> ecosystem; from nightly binary builds of Julia to automated testing of packages.</p>
+  		</div>
+
+      <h3>Nightly Builds</h3>
+      <div style="padding-bottom: .1em;" id="container_nightly">
+      </div>
+
+      <h3>Travis Julia tests</h3>
+      <div style="padding-bottom: .1em;" id="container_travis">
+      </div>
+
+      <h3>Package tests</h3>
+      <div style="padding-bottom: .1em;" id="container_package">
+      </div>
+  	</div>
+  </body>
+</html>
