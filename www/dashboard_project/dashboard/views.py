@@ -1,7 +1,8 @@
 from django.http import HttpResponse
 from django.core.serializers.json import DjangoJSONEncoder
-import json
 from django.shortcuts import render
+from django.utils.timezone import now
+import json
 from models import *
 
 def JSONResponse(data):
@@ -9,9 +10,6 @@ def JSONResponse(data):
 
 # Create your views here.
 def index(request):
-	#nightly_builds = NightlyBuild.objects.all()
-	#travis_builds = TravisBuild.objects.all()
-	#return render( request, 'dashboard/index.html', {'nightly_builds': nightly_builds, 'travis_builds': travis_builds})
 	return render( request, 'dashboard/index.html')
 
 
@@ -19,6 +17,20 @@ def index(request):
 def get_nightly_builds(request):
 	nightly_builds = NightlyBuild.objects.all()
 	return JSONResponse({b.target:{'build_time':b.build_time, 'url':b.url} for b in nightly_builds})
+
+def put_nightly_build(request):
+	if request.method == "POST":
+		data = json.loads(request.body)
+
+		# Create a new one if it doesn't already exist, otherwise update it
+		obj = NightlyBuild.objects.get_or_create(target=data['target'])[0]
+		obj.url = data['url']
+		if 'build_time' in data:
+			obj.build_time = data['build_time']
+		else:
+			obj.build_time = now()
+		obj.save()
+	return HttpResponse()
 
 # Returns a dict, indexed by branch
 def get_travis_builds(request):
@@ -33,5 +45,38 @@ def get_travis_builds(request):
 	
 	return JSONResponse(all_builds)
 
+def put_travis_build(request):
+	if request.method == "POST":
+		data = None
+		if request.body[:8] == "payload=":
+			data = json.loads(request.body[:8])
+		else:
+			data = json.loads(request.body)
+
+		# If we already have the commit that was sent in, delete that record
+		TravisBuild.objects.filter(commit=data['commit']).delete()
+
+		# Find our branch
+		branch = TravisBranch.objects.get_or_create(branch=data['branch'])[0]
+
+		# I like OK better than Passed
+		if data['status_message'] == 'Passed':
+			data['status_message'] = 'OK'
+
+		# Create our TravisBuild object with the requisite data
+		TravisBuild.objects.create(	commit = data['commit'],
+									build_time = data['committed_at'],
+									branch = branch,
+									result = data['status_message'])
+	return HttpResponse()
+
 def get_package_builds(request):
 	return JSONResponse({})
+
+def put_package_build(request):
+	return HttpResponse()
+
+def clear_travis(request):
+	TravisBuild.objects.all().delete()
+	TravisBranch.objects.all().delete()
+	return HttpResponse("\_[;_;]_/<br/>sad robot is sad, yet filled with joy")

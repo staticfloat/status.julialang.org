@@ -14,7 +14,7 @@
     		margin: 10px 10px 10px 10px;
     	}
 
-      .code {
+      .resizing, .code {
         border: 1px solid #8d8d8d;
         padding: 0px 2px 0px 2px;
         background-color: #ccc;
@@ -52,10 +52,36 @@
     <script src="{% static "js/jqplot/jqplot.categoryAxisRenderer.min.js" %}" type="text/javascript"></script>
 
   	<script type="text/javascript">
+      // This is used for the resizing code below so that we know when to redraw
+      // Without this, we redraw many times per second while resizing the window
+      var resizeHandles = {}
+      var plotHandles = {}
+
   		$(document).ready(function() {
         // We're going to start a timer that will update the data every minute
         update();
         setInterval( update, 60*1000 )
+
+        // Also register a resize handler that will stop our graphs from trying to redraw eagerly
+        $(window).bind('resize',function(event, ui) {
+          // For each graph in the DOM
+          $('div.graph').each( function( i ) {
+            var id = $(this).attr('id')
+
+            // If we're already resizing, clear that timeout
+            if( id in resizeHandles )
+              clearTimeout( id )
+            
+            // Empty ourselves and add the class "resizing"
+            $(this).empty().addClass('resizing')
+
+            // 50 ms from here, replot and remove the "resizing" class
+            resizeHandles[id] = setTimeout( function() {
+              plotHandles[id].replot( {resetAxes: true })
+              $('div#'+id).removeClass('resizing')
+            }, 50)
+          })
+        })
   		});
 
       // Santize a DOM selector so that we aren't using invalid characters
@@ -65,58 +91,144 @@
         return selector
       }
 
-      var resizeHandles = {}
+      // Converts the data we've received from the server to native Javascript objects
+      // Currently the only thing needing done is str -> Date
+      function convert_data(data) {
+        for( key in data )
+          data[key]['build_time'] = new Date(data[key]['build_time'])
+        return data
+      }
 
-      // Draw a graph for the Travis Julia tests to illustrate passing/failing tests
-      function update_travis_graph( data, id ) {
-        // We're just going to plot stuff over the last num_days days
-        num_days = 10
-        var pass_bins = new Array(num_days)
-        var fail_bins = new Array(num_days)
-        var xaxis = new Array(num_days)
-
-        base_date = new Date()
-
-        for( i = 0; i<num_days; ++i ) {
-          pass_bins[i] = 0
-          fail_bins[i] = 0
-          d = new Date(base_date.getTime())
-          d.setDate(d.getDate()+i-(num_days-1))
-          xaxis[i] = (d.getMonth()+1) + '/' + d.getDate()
+      // Given a set dates in bins, histogram data into the nearest bin
+      function histogram_data(data, bins) {
+        pass = new Array(bins.length)
+        fail = new Array(bins.length)
+        for( i = 0; i < bins.length; ++i ) {
+          pass[i] = 0;
+          fail[i] = 0;
         }
 
-        // First, sort the data by date
+        for( key in data ) {
+          // Get the time for this particular build
+          t = data[key]['build_time']
+
+          // Find closest bin time
+          min_idx = 0;
+          for( j=1; j<bins.length; ++j ) {
+            if( Math.abs(t - bins[min_idx]) > Math.abs(t - bins[j]) )
+              min_idx = j;
+          }
+
+          // Increment respective output bin
+          if( data[key]['result'] == 'OK' )
+            pass[min_idx]++;
+          else
+            fail[min_idx]++;
+        }
+        return [pass, fail]
+      }
+
+      // Sorts an array of objects with 'build_time' keys
+      function sort_by_date(data) {
         data.sort(function(a,b){
-          var ka = new Date(a['build_time']),
-          kb = new Date(b['build_time'])
-          if( ka < kb )
+          if( a['build_time'] < b['build_time'] )
             return -1
-          if( ka > kb )
+          if( a['build_time'] > b['build_time'] )
             return 1
           return 0
         })
+        return data;
+      }
 
-        // We'll histogram by day
-        for( key in data ) {
-          // Get # of milliseconds between now and this build
-          idx = (base_date - new Date(data[key]['build_time']))
-          // Convert that into days
-          idx = (num_days - 1) - Math.round(idx/(1000.0*60*60*24))
+      // Given the start and end date, construct a linear representation of dates
+      function build_xaxis(start, end, num) {
+        // Default to a certain number of items between start and end (inclusive)
+        num = typeof num !== 'undefined' ? num : 8
 
-          if( idx >= 0 && idx < num_days ) {
-            if( data[key]['result'] == "OK" ) {
-              pass_bins[idx] += 1
-            } else {
-              fail_bins[idx] += 1
-            }
-          }
+        xaxis = new Array(num)
+        step = ((end - start)/(num-1))/(24*60*60*1000)
+
+        // My naive attempt at snapping to a grid so we don't magically "lose" a day every now and then
+        if( Math.abs(Math.round(step) - step) < .25 )
+          step = Math.round(step)
+
+        // Evenly space each tick
+        for( i = num; i>=0; --i ) {
+          xaxis[num-i] = new Date(end.getTime())
+          xaxis[num-i].setDate(end.getDate() - step*i)
+        }
+        return xaxis;
+      }
+
+      // Convert a date to "mm/dd" notation
+      function datestr(x) {
+        return (x.getMonth()+1) + '/' + x.getDate()
+      }
+
+      var dataDebug = {}
+
+      // Draw a graph for the Travis Julia tests to illustrate passing/failing tests
+      function update_travis_graph( data, id ) {
+        if( data.length == 0 )
+          return;
+
+        // Cleanup our data
+        data = convert_data(data)
+        // First, sort the data by date
+        data = sort_by_date(data)
+
+        // Decide what our bins will be; if we have "enough" datapoints within the last min_time days,
+        // plot only min_time days.  If not, we will plot back far enough until we have "enough"
+        var enough = 40
+        var min_time = 8
+
+        // Find how far back we need to go to get min_time worth
+        var i = data.length-2
+        var now = data[data.length-1]['build_time']
+        var enough_days = min_time*24*60*60*1000
+        while( i > 0 && (now - data[i]['build_time']) < enough_days ) {
+          i--
         }
 
-        console.log(pass_bins)
-        console.log(fail_bins)
-        console.log(xaxis)
+        var start = null;
+        var end = data[data.length-1]['build_time']
+
+        // Construct xaxis according to what data we have
+        if( i == 0 || (data.length - i) >= enough ) {
+          // If we ran out of builds, or we have enough within ten days, use either
+          // the start of the data we'll plot, or enough_days, whichever is more time!
+          start = new Date(Math.min( end - enough_days, data[i]['build_time'].getTime() ))
+        } else {
+          // Otherwise, use a longer window until we have enough (if possible)
+          i = Math.max(0, data.length - enough)
+
+          start = new Date(data[i]['build_time'])
+        }
+        
+        // And this is our x-axis.  We'll also create a string representation
+        var xaxis = build_xaxis(start, end)
+        var xaxis_str = new Array(xaxis.length)
+
+        // Check the width of bins.  If greater than 2 days, we'll give date ranges on the axis
+        if( (xaxis[1] - xaxis[0]) > 2*24*60*60*1000 ) {
+          var width = (xaxis[1] - xaxis[0])/2
+          for( var j=0; j<xaxis.length; ++j ) {
+            var x_start = new Date(xaxis[j].getTime() - width)
+            var x_end = new Date(xaxis[j].getTime() + width)
+            xaxis_str[j] = '(' + datestr(x_start) + ' - ' + datestr(x_end) + ')'
+          }
+        } else {
+          for( var j=0; j<xaxis.length; ++j )
+            xaxis_str[j] = datestr(xaxis[j])
+        }
+
+        // Now, histogram the data according to xaxis
+        plot_series = histogram_data( data.slice(i,data.length), xaxis )
+
+
+        // Finally, plot it all out!
         $('#'+id).empty()
-        var plot = $.jqplot(id, [pass_bins, fail_bins], {
+        plotHandles[id] = $.jqplot(id, plot_series, {
           seriesDefaults: {
             renderer: $.jqplot.BarRenderer,
             rendererOptions: {
@@ -125,7 +237,7 @@
             }
           },
 
-          seriesColors: ["#33cc33", "#ee0000"],
+          seriesColors: ["#33bb33", "#ee0000"],
 
           series:[
             {label: 'Pass'},
@@ -139,30 +251,12 @@
           axes: {
             xaxis: {
               renderer: $.jqplot.CategoryAxisRenderer,
-              ticks: xaxis,
+              ticks: xaxis_str,
             },
-/*
-            yaxis: {
-              tickOptions: {
-                formatString: "%d",
-              },
-            },
-*/
           },
         })
-
-        $(window).bind('resize',function(event, ui) {
-          if( id in resizeHandles )
-            clearTimeout( id );
-
-          // Replace the plot with something else
-          $('div#'+id).empty().addClass('code')
-          resizeHandles[id] = setTimeout( function() {
-            plot.replot( {resetAxes: true })
-            $('div#'+id).removeClass('code')
-          }, 50)
-        })
       }
+
 
       // Download new data from the site, write it out to the DOM
       function update() {

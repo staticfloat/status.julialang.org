@@ -2,3 +2,4 @@
 *.db
 secret_key.py
 sitestatic/
+.DS_Store
