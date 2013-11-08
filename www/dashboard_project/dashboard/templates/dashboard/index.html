@@ -277,7 +277,7 @@
               template =  '<div class="cell">'
               template +=     target + ' nightly last built: '
               template +=     '<abbr id="'+id+'" class="timeago" title="' + data[target]['build_time'] + '">'
-              template +=       $.timeago.parse(data[target]).toLocaleString()
+              template +=       $.timeago.parse(data[target]['build_time']).toLocaleString()
               template +=     '</abbr>'
               template +=     '<a style="float:right" id="'+id+'" href="'+data[target]['url']+'" target="_blank">download</a>'
               template += '</div>'
