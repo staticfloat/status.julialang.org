@@ -52,6 +52,8 @@ class NightlyBuild(models.Model):
 class TravisBranch(models.Model):
     branch = models.TextField('Branch')
 
+    enabled = models.BooleanField('Enabled')
+
     def __unicode__(self):
         return self.branch
 

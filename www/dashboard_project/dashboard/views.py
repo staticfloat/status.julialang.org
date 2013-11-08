@@ -34,7 +34,7 @@ def put_nightly_build(request):
 
 # Returns a dict, indexed by branch
 def get_travis_builds(request):
-	travis_branches = TravisBranch.objects.all()
+	travis_branches = TravisBranch.objects.filter(enabled=True)
 
 	all_builds = {}
 	for branch in travis_branches:
@@ -57,7 +57,7 @@ def put_travis_build(request):
 		TravisBuild.objects.filter(commit=data['commit']).delete()
 
 		# Find our branch
-		branch = TravisBranch.objects.get_or_create(branch=data['branch'])[0]
+		branch = TravisBranch.objects.get_or_create(branch=data['branch'],defaults={'enabled':False})[0]
 
 		# I like OK better than Passed
 		if data['status_message'] == 'Passed':
