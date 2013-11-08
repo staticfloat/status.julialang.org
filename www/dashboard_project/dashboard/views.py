@@ -22,14 +22,14 @@ def put_nightly_build(request):
 	if request.method == "POST":
 		data = json.loads(request.body)
 
-		# Create a new one if it doesn't already exist, otherwise update it
-		obj = NightlyBuild.objects.get_or_create(target=data['target'])[0]
-		obj.url = data['url']
+		# Delete the old NightlyBuild:
+		NightlyBuild.objects.filter(target=data['target']).delete()
+
+		build_time = now()
 		if 'build_time' in data:
-			obj.build_time = data['build_time']
-		else:
-			obj.build_time = now()
-		obj.save()
+			build_time = data['build_time']
+
+		NightlyBuild.objects.create(target=data['target'],build_time=build_time)
 	return HttpResponse()
 
 # Returns a dict, indexed by branch
