@@ -28,7 +28,7 @@ def generate_travis(branch, time_limit, time_min=1):
 	obj = {	'branch':branch,
 			'committed_at':date.isoformat(),
 			'commit':commit,
-			'status_message':'Passed' if random.random() > .5 else 'Failed'}
+			'status_message':'Passed' if random.random() > .2 else 'Failed'}
 
 	headers = {'content-type':'application/json'}
 	requests.post("http://localhost:8000/put/travis", data=json.dumps(obj), headers=headers)
