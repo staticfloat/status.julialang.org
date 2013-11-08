@@ -12,7 +12,7 @@
 	<array>
 		<string>/usr/local/bin/uwsgi</string>
 		<string>--ini</string>
-		<string>/Users/sabae/src/status.julialang.org/etc/uwsgi/apps-enabled/dashboard.ini</string>
+		<string>/Users/sabae/src/status.julialang.org/etc/uwsgi/apps-enabled/dashboard_osx.ini</string>
 		<string>--die-on-term</string>
 	</array>
 	<key>WorkingDirectory</key>
