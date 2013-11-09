@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.utils.timezone import now
 import json
 from models import *
+import urllib2
 
 def JSONResponse(data):
 	return HttpResponse( json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json" )
@@ -49,7 +50,7 @@ def put_travis_build(request):
 	if request.method == "POST":
 		data = None
 		if request.body[:8] == "payload=":
-			data = json.loads(request.body[:8])
+			data = json.loads(urllib2.unquote(request.body[8:]))
 		else:
 			data = json.loads(request.body)
 
