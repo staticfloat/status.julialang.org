@@ -183,7 +183,7 @@
         var min_time = 8
 
         // Find how far back we need to go to get min_time worth
-        var i = data.length-2
+        var i = Math.max( 0, data.length-2)
         var now = data[data.length-1]['build_time']
         var enough_days = min_time*24*60*60*1000
         while( i > 0 && (now - data[i]['build_time']) < enough_days ) {
@@ -194,10 +194,10 @@
         var end = data[data.length-1]['build_time']
 
         // Construct xaxis according to what data we have
-        if( i == 0 || (data.length - i) >= enough ) {
+        if( i <= 0 || (data.length - i) >= enough ) {
           // If we ran out of builds, or we have enough within ten days, use either
           // the start of the data we'll plot, or enough_days, whichever is more time!
-          start = new Date(Math.min( end - enough_days, data[i]['build_time'].getTime() ))
+          start = new Date(Math.min( end.getTime() - enough_days, data[i]['build_time'].getTime() ))
         } else {
           // Otherwise, use a longer window until we have enough (if possible)
           i = Math.max(0, data.length - enough)
