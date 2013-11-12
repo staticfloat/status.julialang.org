@@ -40,7 +40,7 @@ class CodespeedBuild(models.Model):
     commit = models.TextField('Commit Hash')
 
     def __unicode__(self):
-        return self.env + " [" + self.blas + "]"
+        return self.env.name + " [" + self.blas + "]"
 
 # These are the branches we want to track on the status page
 class TravisBranch(models.Model):
