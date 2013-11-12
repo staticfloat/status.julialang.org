@@ -329,19 +329,21 @@
             // But I'm willing to live with it for now
             template = ''
             for( name in envs ) {
-              template  += '<div class="cell">'
-              template += '<b title="'+envs[name]+'">' + name + ':</b> '
-              for( blas in blas_data[name] ) {
-                id = 'codespeed-'+sanitize(name+'-'+blas)
-                template += '<span class="codespeed_cell">'
-                template +=   blas + ': '
-                template +=   '<abbr id="'+id+'" class="timeago" title="'+blas_data[name][blas]['time']+'">'
-                template +=     $.timeago.parse(blas_data[name][blas]['time']).toLocaleString()
-                template +=     ' '+blas_data[name][blas]['commit']
-                template +=   '</abbr>'
-                template += '</span>'
+              if( Object.keys(blas_data[name]).length > 0 ) {
+                template  += '<div class="cell">'
+                template += '<b title="'+envs[name]+'">' + name + ':</b> '
+                for( blas in blas_data[name] ) {
+                  id = 'codespeed-'+sanitize(name+'-'+blas)
+                  template += '<span class="codespeed_cell">'
+                  template +=   blas + ': '
+                  template +=   '<abbr id="'+id+'" class="timeago" title="'+blas_data[name][blas]['time']+'">'
+                  template +=     $.timeago.parse(blas_data[name][blas]['time']).toLocaleString()
+                  template +=     ' '+blas_data[name][blas]['commit']
+                  template +=   '</abbr>'
+                  template += '</span>'
+                }
+                template += '</div>'
               }
-              template += '</div>'
             }
 
             $('#container_codespeed').html(template)
