@@ -14,6 +14,13 @@
     		margin: 10px 10px 10px 10px;
     	}
 
+      .codespeed_cell {
+        padding: 2px 5px 2px 5px;
+        margin: 2px 3px 2px 3px;
+        border: 1px solid #8d8d8d;
+        background-color: #d8d8d8;
+      }
+
       .resizing, .code {
         border: 1px solid #8d8d8d;
         padding: 0px 2px 0px 2px;
@@ -95,7 +102,7 @@
       // Currently the only thing needing done is str -> Date
       function convert_data(data) {
         for( key in data )
-          data[key]['build_time'] = new Date(data[key]['build_time'])
+          data[key]['time'] = new Date(data[key]['time'])
         return data
       }
 
@@ -110,7 +117,7 @@
 
         for( key in data ) {
           // Get the time for this particular build
-          t = data[key]['build_time']
+          t = data[key]['time']
 
           // Find closest bin time
           min_idx = 0;
@@ -128,12 +135,12 @@
         return [pass, fail]
       }
 
-      // Sorts an array of objects with 'build_time' keys
+      // Sorts an array of objects with 'time' keys
       function sort_by_date(data) {
         data.sort(function(a,b){
-          if( a['build_time'] < b['build_time'] )
+          if( a['time'] < b['time'] )
             return -1
-          if( a['build_time'] > b['build_time'] )
+          if( a['time'] > b['time'] )
             return 1
           return 0
         })
@@ -184,25 +191,25 @@
 
         // Find how far back we need to go to get min_time worth
         var i = Math.max( 0, data.length-2)
-        var now = data[data.length-1]['build_time']
+        var now = data[data.length-1]['time']
         var enough_days = min_time*24*60*60*1000
-        while( i > 0 && (now - data[i]['build_time']) < enough_days ) {
+        while( i > 0 && (now - data[i]['time']) < enough_days ) {
           i--
         }
 
         var start = null;
-        var end = data[data.length-1]['build_time']
+        var end = data[data.length-1]['time']
 
         // Construct xaxis according to what data we have
         if( i <= 0 || (data.length - i) >= enough ) {
           // If we ran out of builds, or we have enough within ten days, use either
           // the start of the data we'll plot, or enough_days, whichever is more time!
-          start = new Date(Math.min( end.getTime() - enough_days, data[i]['build_time'].getTime() ))
+          start = new Date(Math.min( end.getTime() - enough_days, data[i]['time'].getTime() ))
         } else {
           // Otherwise, use a longer window until we have enough (if possible)
           i = Math.max(0, data.length - enough)
 
-          start = new Date(data[i]['build_time'])
+          start = new Date(data[i]['time'])
         }
         
         // And this is our x-axis.  We'll also create a string representation
@@ -270,14 +277,14 @@
             var abbr = $('#container_nightly').find('abbr#'+id)
             if( abbr.length != 0 ) {
               // If so, just update the title and url
-              $(abbr).attr('title', data[target]['build_time'])
+              $(abbr).attr('title', data[target]['time'])
               $('#container_nightly').find('a#'+id)
             } else {
               // Otherwise, create the whole DOM mess
               template =  '<div class="cell">'
               template +=     target + ' nightly last built: '
-              template +=     '<abbr id="'+id+'" class="timeago" title="' + data[target]['build_time'] + '">'
-              template +=       $.timeago.parse(data[target]['build_time']).toLocaleString()
+              template +=     '<abbr id="'+id+'" class="timeago" title="' + data[target]['time'] + '">'
+              template +=       $.timeago.parse(data[target]['time']).toLocaleString()
               template +=     '</abbr>'
               template +=     '<a style="float:right" id="'+id+'" href="'+data[target]['url']+'" target="_blank">download</a>'
               template += '</div>'
@@ -312,6 +319,37 @@
             update_travis_graph(data[branch], id)
           }
         }})
+
+
+        // Next, let's do the codespeed builds
+        $.ajax('get/codespeed_envs', {success:function(envs) {
+          $.ajax('get/codespeed', {success:function(blas_data) {
+            // I'm not in love with this approach since we build everything every time, as opposed
+            // to the approach in the nightly builds where we selectively update, etc....
+            // But I'm willing to live with it for now
+            template = ''
+            for( name in envs ) {
+              template  += '<div class="cell">'
+              template += '<b title="'+envs[name]+'">' + name + ':</b> '
+              for( blas in blas_data[name] ) {
+                id = 'codespeed-'+sanitize(name+'-'+blas)
+                template += '<span class="codespeed_cell">'
+                template +=   blas + ': '
+                template +=   '<abbr id="'+id+'" class="timeago" title="'+blas_data[name][blas]['time']+'">'
+                template +=     $.timeago.parse(blas_data[name][blas]['time']).toLocaleString()
+                template +=     ' '+blas_data[name][blas]['commit']
+                template +=   '</abbr>'
+                template += '</span>'
+              }
+              template += '</div>'
+            }
+
+            $('#container_codespeed').html(template)
+
+            // Any <abbr> tags with .timeago applied to it will get automagically updated!
+            $('abbr.timeago').timeago();
+          }})
+        }})
       }
   	</script>
   </head>
@@ -332,6 +370,10 @@
 
       <h3>Package tests</h3>
       <div style="padding-bottom: .1em;" id="container_package">
+      </div>
+
+      <h3>Codespeed builds</h3>
+      <div style="padding-bottom: .1em;" id="container_codespeed">
       </div>
   	</div>
   </body>
