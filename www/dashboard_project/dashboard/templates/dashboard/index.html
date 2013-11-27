@@ -281,12 +281,16 @@
               $('#container_nightly').find('a#'+id)
             } else {
               // Otherwise, create the whole DOM mess
-              template =  '<div class="cell">'
+              template =  '<div class="cell row">'
+              template +=     '<div class="col-xs-10">'
               template +=     target + ' nightly last built: '
               template +=     '<abbr id="'+id+'" class="timeago" title="' + data[target]['time'] + '">'
               template +=       $.timeago.parse(data[target]['time']).toLocaleString()
               template +=     '</abbr>'
-              template +=     '<a style="float:right" id="'+id+'" href="'+data[target]['url']+'" target="_blank">download</a>'
+              template +=     '</div>'
+              template +=     '<div class="col-xs-2 text-right">'
+              template +=     '<a id="'+id+'" href="'+data[target]['url']+'" target="_blank">download</a>'
+              template +=     '</div>'
               template += '</div>'
               $('#container_nightly').append(template)
             }
@@ -330,18 +334,22 @@
             template = ''
             for( name in envs ) {
               if( Object.keys(blas_data[name]).length > 0 ) {
-                template  += '<div class="cell">'
+                template += '<div class="cell row">'
+                template += '<div class="col-sm-2">'
                 template += '<b title="'+envs[name]+'">' + name + ':</b> '
+                template += '</div>'
+                //template += '<div style="display:block-inline" class="row">'
                 for( blas in blas_data[name] ) {
                   id = 'codespeed-'+sanitize(name+'-'+blas)
-                  template += '<span class="codespeed_cell">'
+                  template += '<div class="codespeed_cell col-sm-3">'
                   template +=   blas + ': '
                   template +=   '<abbr id="'+id+'" class="timeago" title="'+blas_data[name][blas]['time']+'">'
                   template +=     $.timeago.parse(blas_data[name][blas]['time']).toLocaleString()
                   template +=     ' '+blas_data[name][blas]['commit']
                   template +=   '</abbr>'
-                  template += '</span>'
+                  template += '</div>'
                 }
+                //template += '</div>'
                 template += '</div>'
               }
             }
@@ -352,6 +360,8 @@
             $('abbr.timeago').timeago();
           }})
         }})
+
+        // Finally, let's close out with Package statii
       }
   	</script>
   </head>
@@ -363,19 +373,19 @@
   		</div>
 
       <h3>Nightly Builds</h3>
-      <div style="padding-bottom: .1em;" id="container_nightly">
+      <div id="container_nightly">
       </div>
 
-      <h3>Travis Julia tests</h3>
-      <div style="padding-bottom: .1em;" id="container_travis">
-      </div>
-
-      <h3>Package tests</h3>
-      <div style="padding-bottom: .1em;" id="container_package">
+      <h3><a href="http://travis-ci.org/JuliaLang/julia/builds">Travis</a> Julia tests</h3>
+      <div id="container_travis">
       </div>
 
       <h3>Codespeed builds</h3>
-      <div style="padding-bottom: .1em;" id="container_codespeed">
+      <div id="container_codespeed">
+      </div>
+
+      <h3>Package tests</h3>
+      <div id="container_package">
       </div>
   	</div>
   </body>
