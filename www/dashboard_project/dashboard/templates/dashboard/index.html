@@ -336,7 +336,9 @@
               if( Object.keys(blas_data[name]).length > 0 ) {
                 template += '<div class="cell row">'
                 template += '<div class="col-sm-2">'
+                template += '<div style="padding: 2px 0px 2px 0px; margin: 2px 0px 2px 0px;">'
                 template += '<b title="'+envs[name]+'">' + name + ':</b> '
+                template += '</div>'
                 template += '</div>'
                 //template += '<div style="display:block-inline" class="row">'
                 for( blas in blas_data[name] ) {
