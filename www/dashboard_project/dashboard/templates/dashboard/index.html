@@ -7,11 +7,14 @@
     <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet" media="screen">
     <link href="{% static "css/jquery.jqplot.min.css" %}" rel="stylesheet" media="screen">
     <style>
+      .blankcell, .cell{
+        padding: 5px 5px 5px 5px;
+        margin: 10px 10px 10px 10px;
+      }
+
     	.cell {
     		background-color: #eee;
     		border: 1px solid #999;
-    		padding: 5px 5px 5px 5px;
-    		margin: 10px 10px 10px 10px;
     	}
 
       .codespeed_cell {
@@ -44,6 +47,23 @@
         height:200px;
         width: 100%;
       }
+
+      .bordered {
+        border: 1px solid #8d8d8d;
+        margin: 2px 2px 2px 2px;
+        padding: 0px 1px 0px 1px;
+      }
+
+      /* shamelessly stoled from iaindunning.com */
+      .using_fail { background-color: #FF4444; }
+      .using_pass { background-color: #AAAAFF; }
+      .full_fail  { background-color: #FF9922; }
+      .full_pass  { background-color: #55FF55; }
+
+      .cell_using_fail { background-color: #ffcccc; }
+      .cell_using_pass { background-color: #ddddff; }
+      .cell_full_fail  { background-color: #ffddcc; }
+      .cell_full_pass  { background-color: #ddffdd; }
 
       /* I don't like that dashed underline */
       abbr[title] {
@@ -282,13 +302,13 @@
             } else {
               // Otherwise, create the whole DOM mess
               template =  '<div class="cell row">'
-              template +=     '<div class="col-xs-10">'
+              template +=     '<div style="padding: 0px 0px 0px 0px" class="col-xs-10">'
               template +=     target + ' nightly last built: '
               template +=     '<abbr id="'+id+'" class="timeago" title="' + data[target]['time'] + '">'
               template +=       $.timeago.parse(data[target]['time']).toLocaleString()
               template +=     '</abbr>'
               template +=     '</div>'
-              template +=     '<div class="col-xs-2 text-right">'
+              template +=     '<div style="padding: 0px 0px 0px 0px" class="col-xs-2 text-right">'
               template +=     '<a id="'+id+'" href="'+data[target]['url']+'" target="_blank">download</a>'
               template +=     '</div>'
               template += '</div>'
@@ -364,6 +384,95 @@
         }})
 
         // Finally, let's close out with Package statii
+        $.ajax('get/package', {success:function( data ) {
+          // We're given a dict indexed by name
+          names = Object.keys(data).sort()
+          for( idx in names ) {
+            d = data[names[idx]]
+            id = 'package-'+sanitize(names[idx])
+
+            // Have we already added this particular package?
+            var div = $('#container_package').find('#'+id)
+
+            // If not, barf out the DOM elements we need
+            if( div.length == 0 ) {
+              template =  '<div id="'+id+'" class="cell">'
+              template += '  <div style="margin-left: -12px; margin-right:0px" class="row">'
+              template += '    <div class="pkg-name col-md-2"></div>'
+              template += '  </div>'
+              template += '  <div style="margin-left: 0px; margin-right:0px" class="row">'
+              template += '    <div class="pkg-details col-md-7 bordered"></div>'
+              template += '    <div class="pkg-license col-md-1 bordered"></div>'
+              template += '    <div class="pkg-pkgreq col-md-1 bordered"></div>'
+              template += '    <div class="pkg-metareq col-md-1 bordered"></div>'
+              template += '    <div class="pkg-travis col-md-1 bordered"></div>'
+              template += '  </div>'
+              template += '</div>'
+
+              // Append that template to the container, then update our div element accordingly
+              $('#container_package').append(template)
+              div = $('#container_package').find('div#'+id)
+            }
+
+            // Now, update the above div with the new information stored in data
+            pkgname = $(div).find('.pkg-name')
+            pkgname.html('<a href="'+d['url']+'">'+names[idx]+'</a>')
+            $(div).removeClass("cell_full_pass cell_full_fail cell_using_pass cell_using_fail")
+            $(div).addClass('cell_'+d['status'])
+
+            details = $(div).find('.pkg-details')
+            details.html(d['details'])
+            details.removeClass("full_pass full_fail using_pass using_fail")
+            details.addClass(d['status'])
+
+            license = $(div).find('.pkg-license')
+            license.html('<a href="'+d['url']+'/blob/master/LICENSE.md">'+d['license']+'</a>')
+            license.removeClass("full_pass full_fail")
+            if( d['license'] != "Unknown" )
+              license.addClass("full_pass")
+            else
+              license.addClass("full_fail")
+
+            pkgreq = $(div).find('.pkg-pkgreq')
+            pkgreq.removeClass("full_pass full_fail")
+            if( d['pkgreq'] ) {
+              pkgreq.addClass("full_pass")
+              pkgreq.html('<a href="'+d['url']+'/blob/master/REQUIRE">Pkg</a>')
+            } else {
+              pkgreq.addClass("full_fail")
+              pkgreq.html('Pkg')
+            }
+
+            metareq = $(div).find('.pkg-metareq')
+            metareq.removeClass("full_pass full_fail")
+            if( d['metareq'] ) {
+              metareq.addClass("full_pass")
+              metareq.html('<a href="https://github.com/JuliaLang/METADATA.jl/blob/metadata-v2/'+names[idx]+'/versions/">Meta</a>')
+            } else {
+              metareq.addClass("full_fail")
+              metareq.html('Meta')
+            }
+
+            travis = $(div).find('.pkg-travis')
+            githubIndex = d['url'].indexOf("github.com/")
+            travis.removeClass("full_pass full_fail")
+            console.log( d['travis'] )
+            console.log( githubIndex )
+            if( d['travis'] && githubIndex != -1 ) {
+              // Parse out the username and repo
+              userAndRepo = d['url'].substring(githubIndex+11, d['url'].length )
+
+              travis.html('<a href=https://travis-ci.org/'+userAndRepo+'>Travis</a>')
+              travis.addClass("full_pass")
+            } else {
+              travis.addClass("full_fail")
+              travis.html('Travis')
+            }
+          }
+
+          // Any <abbr> tags with .timeago applied to it will get automagically updated!
+          $('abbr.timeago').timeago();
+        }})
       }
   	</script>
   </head>
@@ -388,6 +497,30 @@
 
       <h3>Package tests</h3>
       <div id="container_package">
+        <div  class="cell">
+          <div style="margin-left: 0px; margin-right:0px" class="row">
+            <div class="bordered col-md-2">
+              Package name
+            </div>
+          </div>
+          <div style="margin-left: 0px; margin-right:0px" class="row">
+            <div class="col-md-7 bordered">
+              Detailed Description
+            </div>
+            <div class="col-md-1 bordered">
+              License
+            </div>
+            <div class="col-md-1 bordered">
+              Pkg REQUIRE
+            </div>
+            <div class="col-md-1 bordered">
+              METADATA REQUIRE
+            </div>
+            <div class="col-md-1 bordered">
+              Travis
+            </div>
+          </div>
+        </div>
       </div>
   	</div>
   </body>

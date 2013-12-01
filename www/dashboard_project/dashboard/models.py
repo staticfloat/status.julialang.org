@@ -68,3 +68,29 @@ class TravisBuild(models.Model):
 
     def __unicode__(self):
         return self.commit + " [" + self.result + "]"
+
+
+# Stores Package builds from PackageEval
+class PackageBuild(models.Model):
+    # The name of the package (Nettle.jl)
+    name = models.TextField('Name')
+
+    # The url of the package (http://github.com/JuliaLang/Nettle.jl)
+    url = models.TextField('Repository URL')
+
+    # License of the package (MIT)
+    license = models.TextField('License type')
+
+    # Details ("Tests Exist, tried 'using pkgname' but failed", etc...)
+    details = models.TextField('Details')
+
+    # status, must be one of ["full_pass", "full_fail", "using_pass", "using_fail"]
+    status = models.TextField('Status')
+
+    # Flags for specific checks from Package Eval (true/false)
+    pkgreq = models.BooleanField('Package REQUIRE file present')
+    metareq = models.BooleanField('METADATA REQUIRE file present')
+    travis = models.BooleanField('Travis setup')
+
+    def __unicode__(self):
+        return self.name

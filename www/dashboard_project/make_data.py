@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 from datetime import timedelta, datetime
-import json
-import requests
-import random
-import string
-import sys
+import json, os, requests, random, string, sys
 
 # This is a test script to auto-generate a bunch of data for status.julialang.org (running locally, of course)
 # It requires the [requests] module to run properly
@@ -69,3 +65,6 @@ generate_travis('release-0.1', 300, 200)
 
 
 print 'Uploading package builds....'
+for f in os.listdir('testdata'):
+	data = open("testdata/%s"%(f,)).read()
+	requests.post("http://localhost:8000/put/package", data=data)

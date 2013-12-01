@@ -1,0 +1,10 @@
+{
+  "name": "ASCIIPlots",
+  "url": "http://github.com/johnmyleswhite/ASCIIPlots.jl",
+  "license": "MIT",
+  "status": "full_pass",
+  "details": "Tests exist, ran 'julia runtests.jl', passed!",
+  "pkgreq": "false",
+  "metareq": "false",
+  "travis": "false"
+}
