@@ -1,9 +1,10 @@
 {
   "name": "ApproxFun",
   "url": "http://github.com/dlfivefifty/ApproxFun",
+  "version": "0.0.0",
   "license": "Unknown",
-  "status": "using_fail",
-  "details": "Tests exist, no master file to run, tried 'using ApproxFun', failed!",
+  "status": "using_pass",
+  "details": "Tests exist, no master file to run, tried 'using ApproxFun', no errors.",
   "pkgreq": "false",
   "metareq": "false",
   "travis": "false"

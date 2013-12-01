@@ -78,6 +78,9 @@ class PackageBuild(models.Model):
     # The url of the package (http://github.com/JuliaLang/Nettle.jl)
     url = models.TextField('Repository URL')
 
+    # The version of the package being tested
+    version = models.TextField('Version')
+
     # License of the package (MIT)
     license = models.TextField('License type')
 

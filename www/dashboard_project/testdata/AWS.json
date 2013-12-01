@@ -1,9 +1,10 @@
 {
   "name": "AWS",
   "url": "http://github.com/amitmurthy/AWS.jl",
+  "version": "0.0.0",
   "license": "MIT",
-  "status": "using_fail",
-  "details": "Tests exist, no master file to run, tried 'using AWS', failed!",
+  "status": "using_pass",
+  "details": "Tests exist, no master file to run, tried 'using AWS', no errors.",
   "pkgreq": "false",
   "metareq": "true",
   "travis": "false"

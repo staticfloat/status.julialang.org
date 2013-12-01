@@ -440,17 +440,17 @@
               pkgreq.html('<a href="'+d['url']+'/blob/master/REQUIRE">Pkg</a>')
             } else {
               pkgreq.addClass("full_fail")
-              pkgreq.html('Pkg')
+              pkgreq.html('<a href="'+d['url']+'/blob/master">Pkg</a>')
             }
 
             metareq = $(div).find('.pkg-metareq')
             metareq.removeClass("full_pass full_fail")
             if( d['metareq'] ) {
               metareq.addClass("full_pass")
-              metareq.html('<a href="https://github.com/JuliaLang/METADATA.jl/blob/metadata-v2/'+names[idx]+'/versions/">Meta</a>')
+              metareq.html('<a href="https://github.com/JuliaLang/METADATA.jl/blob/metadata-v2/'+names[idx]+'/versions/'+d['version']+'/requires">Meta</a>')
             } else {
               metareq.addClass("full_fail")
-              metareq.html('Meta')
+              metareq.html('<a href="https://github.com/JuliaLang/METADATA.jl/blob/metadata-v2/'+names[idx]+'/versions">Meta</a>')
             }
 
             travis = $(div).find('.pkg-travis')
@@ -497,10 +497,27 @@
 
       <h3>Package tests</h3>
       <div id="container_package">
+        <h5>Layout and color legend:</h5>
         <div  class="cell">
           <div style="margin-left: 0px; margin-right:0px" class="row">
-            <div class="bordered col-md-2">
+            <div class="bordered col-sm-2">
               Package name
+            </div>
+            <div class="col-sm-5">
+            </div>
+            <div style="margin: 0px; padding: 0px 1px 0px 1px;" class="col-sm-4">
+              <div class="bordered using_fail">
+                `using package` failed
+              </div>
+              <div class="bordered full_fail">
+              `using package` worked, tests failed
+              </div>
+              <div class="bordered using_pass">
+                `using package` passed, tests missing
+              </div>
+              <div class="bordered full_pass">
+                `using package` passed, all tests pass
+              </div>
             </div>
           </div>
           <div style="margin-left: 0px; margin-right:0px" class="row">

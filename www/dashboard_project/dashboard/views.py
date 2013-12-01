@@ -121,7 +121,7 @@ def get_codespeed_environments(request):
 def get_package_builds(request):
 	data = PackageBuild.objects.all()
 	obj = {p.name:{	'url':p.url, 'license':p.license, 'status':p.status, 'details':p.details,
-					'pkgreq':p.pkgreq, 'metareq':p.metareq, 'travis':p.travis} for p in data}
+					'pkgreq':p.pkgreq, 'metareq':p.metareq, 'travis':p.travis, 'version':p.version} for p in data}
 	return JSONResponse(obj)
 
 def put_package_build(request):
@@ -132,7 +132,7 @@ def put_package_build(request):
 		PackageBuild.objects.filter(name=data['name']).delete()
 
 		# Save out the information to our database
-		PackageBuild.objects.create(name=data['name'], url=data['url'], license=data['license'], status=data['status'],
+		PackageBuild.objects.create(name=data['name'], url=data['url'], license=data['license'], status=data['status'], version=data['version'],
 									details=data['details'], pkgreq=data['pkgreq'] == "true", metareq=data['metareq'] == "true", travis=data['travis'] == "true")
 	return HttpResponse()
 
