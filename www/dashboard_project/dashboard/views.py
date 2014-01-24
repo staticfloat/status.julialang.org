@@ -31,7 +31,7 @@ def put_nightly_build(request):
 		if 'time' in data:
 			time = data['time']
 
-		NightlyBuild.objects.create(target=data['target'],time=time)
+		NightlyBuild.objects.create(target=data['target'],url=data['url'],time=time)
 	return HttpResponse()
 
 # Returns a dict, indexed by branch
