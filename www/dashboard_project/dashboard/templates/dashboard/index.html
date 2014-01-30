@@ -387,8 +387,11 @@
 
         // Finally, let's close out with Package statii
         $.ajax('get/package', {success:function( data ) {
-          // We're given a dict indexed by name
-          names = Object.keys(data).sort()
+          // We're given a dict indexed by name, sort ignoring case
+          names = Object.keys(data).sort(function( a, b) {
+            return a.toLowerCase().localeCompare(b.toLowerCase());
+          })
+          
           for( idx in names ) {
             d = data[names[idx]]
             id = 'package-'+sanitize(names[idx])
