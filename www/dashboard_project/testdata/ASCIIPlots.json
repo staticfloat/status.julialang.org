@@ -2,6 +2,7 @@
   "name": "ASCIIPlots",
   "url": "http://github.com/johnmyleswhite/ASCIIPlots.jl",
   "version": "0.0.2",
+  "gitsha": "abcd123",
   "license": "MIT",
   "status": "full_pass",
   "details": "Tests exist, ran 'julia runtests.jl', passed!",

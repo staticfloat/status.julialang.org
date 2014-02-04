@@ -70,6 +70,11 @@ class TravisBuild(models.Model):
         return self.commit + " [" + self.result + "]"
 
 
+# Stores information about the last PackageRun
+class PackageRun(models.Model):
+    date = models.DateTimeField('Date of last PackageEval.jl submission')
+
+
 # Stores Package builds from PackageEval
 class PackageBuild(models.Model):
     # The name of the package (Nettle.jl)
@@ -78,8 +83,9 @@ class PackageBuild(models.Model):
     # The url of the package (http://github.com/JuliaLang/Nettle.jl)
     url = models.TextField('Repository URL')
 
-    # The version of the package being tested
-    version = models.TextField('Version')
+    # The version of the package being tested (v0.1.8/d34df00d)
+    version = models.TextField('Version of package (from METADATA)')
+    gitsha = models.TextField('git SHA of package')
 
     # License of the package (MIT)
     license = models.TextField('License type')

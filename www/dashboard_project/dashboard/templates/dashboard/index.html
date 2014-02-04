@@ -289,10 +289,14 @@
 
       // Download new data from the site, write it out to the DOM
       function update() {
+        promises = []
+
         // Start with nightly builds
-        $.ajax('get/nightly', {success:function( data ) {
+        promises.push( $.ajax('get/nightly').then(function( data ) {
           // We're given a dict indexed by target
-          for( target in data ) {
+          targets = Object.keys(data).sort()
+          for( idx in targets ) {
+            target = targets[idx]
             id = 'nightly-'+sanitize(target)
 
             // Have we already added this particular target?
@@ -317,14 +321,11 @@
               $('#container_nightly').append(template)
             }
           }
-
-          // Any <abbr> tags with .timeago applied to it will get automagically updated!
-          $('abbr.timeago').timeago();
-        }})
+        }))
 
 
         // Then, move on to travis builds
-        $.ajax('get/travis', {success:function( data ) {
+        promises.push( $.ajax('get/travis' ).then(function( data ) {
           // We're given a dict indexed by branch
           for( branch in data ) {
             // Gotta sanitize out naughty characters
@@ -344,49 +345,60 @@
             // Now, update the graph for this branch
             update_travis_graph(data[branch], id)
           }
-        }})
+        }))
 
 
         // Next, let's do the codespeed builds
-        $.ajax('get/codespeed_envs', {success:function(envs) {
-          $.ajax('get/codespeed', {success:function(blas_data) {
-            // I'm not in love with this approach since we build everything every time, as opposed
-            // to the approach in the nightly builds where we selectively update, etc....
-            // But I'm willing to live with it for now
-            template = ''
-            for( name in envs ) {
-              if( Object.keys(blas_data[name]).length > 0 ) {
-                template += '<div class="cell row">'
-                template += '<div class="col-sm-2">'
-                template += '<div style="padding: 2px 0px 2px 0px; margin: 2px 0px 2px 0px;">'
-                template += '<b title="'+envs[name]+'">' + name + ':</b> '
-                template += '</div>'
-                template += '</div>'
-                //template += '<div style="display:block-inline" class="row">'
-                for( blas in blas_data[name] ) {
-                  id = 'codespeed-'+sanitize(name+'-'+blas)
-                  template += '<div class="codespeed_cell col-sm-3">'
-                  template +=   blas + ': '
-                  template +=   '<abbr id="'+id+'" class="timeago" title="'+blas_data[name][blas]['time']+'">'
-                  template +=     $.timeago.parse(blas_data[name][blas]['time']).toLocaleString()
-                  template +=     ' '+blas_data[name][blas]['commit']
-                  template +=   '</abbr>'
-                  template += '</div>'
-                }
-                //template += '</div>'
+        codespeed_envs_promise = $.ajax('get/codespeed_envs' )
+        codespeed_promise = $.ajax('get/codespeed')
+
+        promises.push(codespeed_envs_promise)
+        promises.push(codespeed_promise)
+
+        promises.push($.when( codespeed_promise, codespeed_envs_promise ).then(function(blas_data_container, envs_container) {
+          envs = envs_container[0]
+          blas_data = blas_data_container[0]
+          // I'm not in love with this approach since we build everything every time, as opposed
+          // to the approach in the nightly builds where we selectively update, etc....
+          // But I'm willing to live with it for now
+          template = ''
+          for( name in envs ) {
+            if( Object.keys(blas_data[name]).length > 0 ) {
+              template += '<div class="cell row">'
+              template += '<div class="col-sm-2">'
+              template += '<div style="padding: 2px 0px 2px 0px; margin: 2px 0px 2px 0px;">'
+              template += '<b title="'+envs[name]+'">' + name + ':</b> '
+              template += '</div>'
+              template += '</div>'
+              //template += '<div style="display:block-inline" class="row">'
+              blas_names = Object.keys(blas_data[name]).sort()
+              for( idx in blas_names ) {
+                blas = blas_names[idx]
+                id = 'codespeed-'+sanitize(name+'-'+blas)
+                template += '<div class="codespeed_cell col-sm-3">'
+                template +=   blas + ': '
+                template +=   '<abbr id="'+id+'" class="timeago" title="'+blas_data[name][blas]['time']+'">'
+                template +=     $.timeago.parse(blas_data[name][blas]['time']).toLocaleString()
+                template +=     ' '+blas_data[name][blas]['commit']
+                template +=   '</abbr>'
                 template += '</div>'
               }
+              //template += '</div>'
+              template += '</div>'
             }
+          }
 
-            $('#container_codespeed').html(template)
+          $('#container_codespeed').html(template)
+        }))
 
-            // Any <abbr> tags with .timeago applied to it will get automagically updated!
-            $('abbr.timeago').timeago();
-          }})
-        }})
+        // Get the last time we ran PackageEval
+        promises.push($.ajax('get/package_run').then(function( data ) {
+          // We're given a dict that has a single entry: date
+          $('abbr#last_package_run').attr('title', data['date']).html("blah")
+        }))
 
         // Finally, let's close out with Package statii
-        $.ajax('get/package', {success:function( data ) {
+        promises.push( $.ajax('get/package').then(function( data ) {
           // We're given a dict indexed by name, sort ignoring case
           names = Object.keys(data).sort(function( a, b) {
             return a.toLowerCase().localeCompare(b.toLowerCase());
@@ -403,7 +415,7 @@
             if( div.length == 0 ) {
               template =  '<div id="'+id+'" class="cell">'
               template += '  <div style="margin-left: -12px; margin-right:0px" class="row">'
-              template += '    <div class="pkg-name col-xs-2"></div>'
+              template += '    <div class="pkg-name col-xs-12"></div>'
               template += '  </div>'
               template += '  <div style="margin-left: 0px; margin-right:0px" class="row">'
               template += '    <div class="pkg-details col-xs-7 bordered"></div>'
@@ -421,7 +433,7 @@
 
             // Now, update the above div with the new information stored in data
             pkgname = $(div).find('.pkg-name')
-            pkgname.html('<a href="'+d['url']+'">'+names[idx]+'</a>')
+            pkgname.html('<a href="'+d['url']+'">'+names[idx]+'</a> (<a href="'+d['url']+'/commit/'+d['gitsha']+'">'+d['version']+'/'+d['gitsha']+'</a>)')
             $(div).removeClass("cell_full_pass cell_full_fail cell_using_pass cell_using_fail")
             $(div).addClass('cell_'+d['status'])
 
@@ -461,8 +473,6 @@
             travis = $(div).find('.pkg-travis')
             githubIndex = d['url'].indexOf("github.com/")
             travis.removeClass("full_pass full_fail")
-            console.log( d['travis'] )
-            console.log( githubIndex )
             if( d['travis'] && githubIndex != -1 ) {
               // Parse out the username and repo
               userAndRepo = d['url'].substring(githubIndex+11, d['url'].length )
@@ -474,10 +484,12 @@
               travis.html('Travis')
             }
           }
+        }))
 
+        $.when.apply($, promises).done(function(){
           // Any <abbr> tags with .timeago applied to it will get automagically updated!
           $('abbr.timeago').timeago();
-        }})
+        })
       }
   	</script>
   </head>
@@ -500,15 +512,13 @@
       <div id="container_codespeed">
       </div>
 
-      <h3>Package tests</h3>
+      <h3>Package tests &nbsp;<span class="text-muted" style="font-size:smaller">(Last run: <abbr id="last_package_run" class="timeago" style="color:#999"></abbr>)</span></h3>
       <div id="container_package">
         <h5>Layout and color legend:</h5>
         <div  class="cell">
           <div style="margin-left: 0px; margin-right:0px" class="row">
-            <div class="bordered col-sm-2">
-              Package name
-            </div>
-            <div class="col-sm-5">
+            <div class="bordered col-xs-7">
+              Package name (Version/Git SHA)
             </div>
             <div style="margin: 0px; padding: 0px 1px 0px 1px;" class="col-sm-4">
               <div class="bordered using_fail">

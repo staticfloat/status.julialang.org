@@ -2,6 +2,7 @@
   "name": "AWS",
   "url": "http://github.com/amitmurthy/AWS.jl",
   "version": "0.0.0",
+  "gitsha": "321bacd",
   "license": "MIT",
   "status": "using_pass",
   "details": "Tests exist, no master file to run, tried 'using AWS', no errors.",

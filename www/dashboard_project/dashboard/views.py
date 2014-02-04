@@ -120,7 +120,7 @@ def get_codespeed_environments(request):
 
 def get_package_builds(request):
 	data = PackageBuild.objects.all()
-	obj = {p.name:{	'url':p.url, 'license':p.license, 'status':p.status, 'details':p.details,
+	obj = {p.name:{	'url':p.url, 'license':p.license, 'status':p.status, 'details':p.details, 'gitsha':p.gitsha,
 					'pkgreq':p.pkgreq, 'metareq':p.metareq, 'travis':p.travis, 'version':p.version} for p in data}
 	return JSONResponse(obj)
 
@@ -128,14 +128,27 @@ def put_package_build(request):
 	if request.method == "POST":
 		data = json.loads(request.body)
 
+		# Update our "latest PackageEval" field
+		if not len(PackageRun.objects.all()):
+			PackageRun.objects.create(date=now())
+		else:
+			pr_obj = PackageRun.objects.get()
+			pr_obj.date = now()
+			pr_obj.save()
+
 		# Delete this PackageBuild if it already exists
 		PackageBuild.objects.filter(name=data['name']).delete()
 
 		# Save out the information to our database
-		PackageBuild.objects.create(name=data['name'], url=data['url'], license=data['license'], status=data['status'], version=data['version'],
-									details=data['details'], pkgreq=data['pkgreq'] == "true", metareq=data['metareq'] == "true", travis=data['travis'] == "true")
+		PackageBuild.objects.create(name=data['name'], url=data['url'], license=data['license'], status=data['status'],
+									version=data['version'], details=data['details'], gitsha=data['gitsha'],
+									pkgreq=data['pkgreq'] == "true", metareq=data['metareq'] == "true", travis=data['travis'] == "true")
 	return HttpResponse()
 
+
+def get_package_run(request):
+	pr_obj = PackageRun.objects.get()
+	return JSONResponse({'date':pr_obj.date})
 
 def clear_travis(request):
 	TravisBuild.objects.all().delete()

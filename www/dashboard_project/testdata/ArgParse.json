@@ -2,6 +2,7 @@
   "name": "ArgParse",
   "url": "http://github.com/carlobaldassi/ArgParse.jl",
   "version": "0.2.8",
+  "gitsha": "1a2a3a4a",
   "license": "MIT",
   "status": "full_pass",
   "details": "Tests exist, ran 'julia runtests.jl', passed!",

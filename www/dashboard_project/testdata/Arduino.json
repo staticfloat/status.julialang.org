@@ -2,6 +2,7 @@
   "name": "Arduino",
   "url": "http://github.com/rennis250/Arduino.jl",
   "version": "0.0.0",
+  "gitsha":, "abdcdacd",
   "license": "Unknown",
   "status": "using_fail",
   "details": "No tests, tried 'using Arduino', failed!",

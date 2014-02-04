@@ -14,4 +14,5 @@ urlpatterns = patterns('',
     url(r'^put/codespeed_env$', views.put_codespeed_environment),
     url(r'^get/package$', views.get_package_builds),
     url(r'^put/package$', views.put_package_build),
+    url(r'^get/package_run$', views.get_package_run),
 )
