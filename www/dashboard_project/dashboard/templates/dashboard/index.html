@@ -394,7 +394,7 @@
         // Get the last time we ran PackageEval
         promises.push($.ajax('get/package_run').then(function( data ) {
           // We're given a dict that has a single entry: date
-          $('abbr#last_package_run').attr('title', data['date']).html("blah")
+          $('abbr#last_package_run').attr('title', data['date'])
         }))
 
         // Finally, let's close out with Package statii

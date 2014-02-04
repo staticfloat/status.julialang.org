@@ -147,8 +147,9 @@ def put_package_build(request):
 
 
 def get_package_run(request):
-	pr_obj = PackageRun.objects.get()
-	return JSONResponse({'date':pr_obj.date})
+	if len(PackageRun.objects.all()):
+		return JSONResponse({'date':PackageRun.objects.get().date})
+	return JSONResponse({'date':''})
 
 def clear_travis(request):
 	TravisBuild.objects.all().delete()
