@@ -314,8 +314,10 @@
               template +=       $.timeago.parse(data[target]['time']).toLocaleString()
               template +=     '</abbr>'
               template +=     '</div>'
+              
               template +=     '<div style="padding: 0px 0px 0px 0px" class="col-xs-2 text-right">'
-              template +=     '<a id="'+id+'" href="'+data[target]['url']+'" target="_blank">download</a>'
+              template +=     '[<a href="'+data[target]['log_url']+'" target="_blank">log</a>]&nbsp;&nbsp;'
+              template +=     '[<a id="'+id+'" href="'+data[target]['url']+'" target="_blank">download</a>]'
               template +=     '</div>'
               template += '</div>'
               $('#container_nightly').append(template)
