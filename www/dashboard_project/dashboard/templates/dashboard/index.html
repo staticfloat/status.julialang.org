@@ -398,6 +398,8 @@
           // We're given a dict that has a single entry: date
           $('abbr#last_package_run').attr('title', data['date'])
           $('abbr#last_package_run').timeago()
+          if( data['date'].length )
+            $('#last_package_run_container').fadeIn()
         }))
 
         // Finally, let's close out with Package statii
@@ -447,7 +449,7 @@
             details.addClass(d['status'])
 
             license = $(div).find('.pkg-license')
-            license.html('<a href="'+d['url']+'/blob/master/LICENSE.md">'+d['license']+'</a>')
+            license.html('<a href="'+d['url']+'/blob/master/'+d['licfile']+'">'+d['license']+'</a>')
             license.removeClass("full_pass full_fail")
             if( d['license'] != "Unknown" )
               license.addClass("full_pass")
@@ -516,7 +518,11 @@
       <div id="container_codespeed">
       </div>
 
-      <h3>Package tests &nbsp;<span class="text-muted" style="font-size:smaller">(Last run: <abbr id="last_package_run" class="timeago" style="color:#999"></abbr>)</span></h3>
+      <h3>Package tests &nbsp;
+      <span id="last_package_run_container" class="text-muted" style="font-size:smaller;display:none">
+      (Last run: <abbr id="last_package_run" class="timeago" style="color:#999"></abbr>)
+      </span>
+      </h3>
       <div id="container_package">
         <h5>Layout and color legend:</h5>
         <div  class="cell">

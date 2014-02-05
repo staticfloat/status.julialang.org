@@ -2,9 +2,8 @@ from django.http import HttpResponse
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render
 from django.utils.timezone import now
-import json
 from models import *
-import urllib2
+import urllib2, json
 
 def JSONResponse(data):
 	return HttpResponse( json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json" )
@@ -13,25 +12,44 @@ def JSONResponse(data):
 def index(request):
 	return render( request, 'dashboard/index.html')
 
+# Updates a django model with a dict, mapping keys to properties inside that model.  Saves the model
+def update_model( model, data, keys ):
+	# If keys is a list, use same keys for model and data
+	if type(keys) is list:
+		for k in keys:
+			if k in data:
+				setattr(model, k, data[k])
+
+	# If keys is a dict, use keys of keys for data, and values of keys for model:
+	if type(keys) is dict:
+		for k in keys:
+			if k in data:
+				setattr(model, keys[k], data[k])
+	model.save()
+
+# Create a dict from a model, ready for jsonification
+def dict_model( model, keys ):
+	d = {}
+	for k in keys:
+		d[k] = getattr(model,k)
+	return d
+
+
+
+
 # Returns a dict, indexed by target, pointing to the time
 def get_nightly_builds(request):
 	nightly_builds = NightlyBuild.objects.all()
-	return JSONResponse({b.target:{'time':b.time, 'url':b.url} for b in nightly_builds})
+	return JSONResponse({b.target:{'time':b.time, 'url':b.url, 'log_url':b.log_url} for b in nightly_builds})
 
 # Store a nightly build
 def put_nightly_build(request):
 	if request.method == "POST":
 		data = json.loads(request.body)
 
-		# Delete the old NightlyBuild:
-		NightlyBuild.objects.filter(target=data['target']).delete()
-
-		# If 'time' was ommitted, just use the current time
-		time = now()
-		if 'time' in data:
-			time = data['time']
-
-		NightlyBuild.objects.create(target=data['target'],url=data['url'],time=time)
+		# Find the old NightlyBuild, creating if it does not already exist.  Then update it.
+		nightly_obj = NightlyBuild.objects.get_or_create(target=data['target'])[0]
+		update_model( nightly_obj, data, ['time', 'log_url', 'url'] )
 	return HttpResponse()
 
 # Returns a dict, indexed by branch
@@ -57,43 +75,16 @@ def put_travis_build(request):
 		else:
 			data = json.loads(request.body)
 
-		# If we already have the commit that was sent in, delete that record
-		TravisBuild.objects.filter(commit=data['commit']).delete()
-
-		# Find our branch
-		branch = TravisBranch.objects.get_or_create(branch=data['branch'],defaults={'enabled':False})[0]
-
 		# I like OK better than Passed
 		if data['status_message'] == 'Passed':
 			data['status_message'] = 'OK'
 
-		# Create our TravisBuild object with the requisite data
-		TravisBuild.objects.create(	commit = data['commit'],
-									time = data['committed_at'],
-									branch = branch,
-									result = data['status_message'])
-	return HttpResponse()
+		# Find our branch
+		branch = TravisBranch.objects.get_or_create(branch=data['branch'],defaults={'enabled':False})[0]
 
-def put_codespeed_build(request):
-	if request.method == "POST":
-		data = json.loads(request.body)
-
-		# Do we already have this environment?  If not, drop the request
-		try:
-			env = CodespeedEnvironment.objects.get(name=data['env'])
-
-			# Delete the CodespeedBuild object that corresponds to this env/blas combo (if it exists)
-			CodespeedBuild.objects.filter(env=env,blas=data['blas']).delete()
-
-			# If 'time' was ommitted, just use the current time
-			time = now()
-			if 'time' in data:
-				time = data['time']
-
-			# Create a new one and store it
-			CodespeedBuild.objects.create(env=env,blas=data['blas'], time=time, commit=data['commit'])
-		except:
-			pass
+		# If we already have the commit that was sent in, delete that record
+		travis_obj = TravisBuild.objects.get_or_create(commit=data['commit'], branch=branch)[0]
+		update_model( travis_obj, data, {'committed_at':'time', 'status_message':'result'})
 	return HttpResponse()
 
 
@@ -104,24 +95,42 @@ def get_codespeed_builds(request):
 		json_obj[env.name] = {b.blas:{'time': b.time, 'commit': b.commit} for b in codespeed_builds}
 	return JSONResponse(json_obj)
 
+def put_codespeed_build(request):
+	if request.method == "POST":
+		data = json.loads(request.body)
+
+		# Do we already have this environment?  If not, drop the request
+		env = CodespeedEnvironment.objects.filter(name=data['env'])
+		if not len(env):
+			return HttpResponse()
+
+		# Delete the CodespeedBuild object that corresponds to this env/blas combo (if it exists)
+		codespeed_obj = CodespeedBuild.objects.get_or_create(env=env[0])[0]
+		update_model( codespeed_obj, data, ['blas', 'commit', 'time'] )
+	return HttpResponse()
+
+
 def put_codespeed_environment(request):
 	if request.method == "POST":
 		data = json.loads(request.body)
 
-		# Delete this environment object if it already exists
-		CodespeedEnvironment.objects.filter(name=data['name']).delete()
-
-		# Create a new one and store it
-		CodespeedEnvironment.objects.create(name=data['name'],OS=data['OS'])
+		# Get the previous codespeed environment object, if it exists. Create one otherwise
+		codespeedenv_obj = CodespeedEnvironment.objects.get_or_create(name=data['name'])[0]
+		update_model( codespeedenv_obj, data, ['OS'])
 	return HttpResponse()
 
 def get_codespeed_environments(request):
 	return JSONResponse({env.name:env.OS for env in CodespeedEnvironment.objects.all()})
 
 def get_package_builds(request):
+	# Get all Package Builds
 	data = PackageBuild.objects.all()
-	obj = {p.name:{	'url':p.url, 'license':p.license, 'status':p.status, 'details':p.details, 'gitsha':p.gitsha,
-					'pkgreq':p.pkgreq, 'metareq':p.metareq, 'travis':p.travis, 'version':p.version} for p in data}
+
+	# These are the fields we'll send from each PackageBuild
+	fields = ['url', 'license', 'licfile', 'status', 'details', 'gitsha', 'pkgreq', 'metareq', 'travis', 'version']
+	
+	# Create a dict out of each model, and point to it by each model's name
+	obj = {p.name: dict_model(p, fields) for p in data}
 	return JSONResponse(obj)
 
 def put_package_build(request):
@@ -130,19 +139,19 @@ def put_package_build(request):
 
 		# Update our "latest PackageEval" field
 		if not len(PackageRun.objects.all()):
-			PackageRun.objects.create(date=now())
+			PackageRun.objects.create()
 		else:
-			pr_obj = PackageRun.objects.get()
-			pr_obj.date = now()
-			pr_obj.save()
-
+			PackageRun.objects.update(date=now())
+			
 		# Delete this PackageBuild if it already exists
-		PackageBuild.objects.filter(name=data['name']).delete()
+		package_obj = PackageBuild.objects.get_or_create(name=data['name'])[0]
+		update_model( package_obj, data, ['name', 'url', 'license', 'status', 'version', 'details', 'gitsha', 'licfile'] )
 
-		# Save out the information to our database
-		PackageBuild.objects.create(name=data['name'], url=data['url'], license=data['license'], status=data['status'],
-									version=data['version'], details=data['details'], gitsha=data['gitsha'],
-									pkgreq=data['pkgreq'] == "true", metareq=data['metareq'] == "true", travis=data['travis'] == "true")
+		# Special treatment for boolean values
+		for key in ['pkgreq', 'metqreq', 'travis']:
+			if key in data:
+				setattr(package_obj, key, data[key] == "true")
+		package_obj.save()
 	return HttpResponse()
 
 
