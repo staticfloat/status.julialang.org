@@ -66,5 +66,6 @@ generate_travis('release-0.1', 300, 200)
 
 print 'Uploading package builds....'
 for f in os.listdir('testdata'):
-	data = open("testdata/%s"%(f,)).read()
-	requests.post("http://localhost:8000/put/package", data=data)
+	if f.endswith('.json'):
+		data = open("testdata/%s"%(f,)).read()
+		requests.post("http://localhost:8000/put/package", data=data)
