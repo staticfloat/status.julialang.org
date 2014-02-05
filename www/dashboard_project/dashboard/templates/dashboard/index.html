@@ -321,6 +321,7 @@
               $('#container_nightly').append(template)
             }
           }
+          $('#container_nightly abbr.timeago').timeago()
         }))
 
 
@@ -389,12 +390,14 @@
           }
 
           $('#container_codespeed').html(template)
+          $('#container_codespeed abbr.timeago').timeago()
         }))
 
         // Get the last time we ran PackageEval
         promises.push($.ajax('get/package_run').then(function( data ) {
           // We're given a dict that has a single entry: date
           $('abbr#last_package_run').attr('title', data['date'])
+          $('abbr#last_package_run').timeago()
         }))
 
         // Finally, let's close out with Package statii
@@ -433,7 +436,8 @@
 
             // Now, update the above div with the new information stored in data
             pkgname = $(div).find('.pkg-name')
-            pkgname.html('<a href="'+d['url']+'">'+names[idx]+'</a> (<a href="'+d['url']+'/commit/'+d['gitsha']+'">'+d['version']+'/'+d['gitsha']+'</a>)')
+            short_sha = d['gitsha'].substring(0,8)
+            pkgname.html('<a href="'+d['url']+'">'+names[idx]+'</a> (<a href="'+d['url']+'/commit/'+d['gitsha']+'">'+d['version']+'/'+short_sha+'</a>)')
             $(div).removeClass("cell_full_pass cell_full_fail cell_using_pass cell_using_fail")
             $(div).addClass('cell_'+d['status'])
 
