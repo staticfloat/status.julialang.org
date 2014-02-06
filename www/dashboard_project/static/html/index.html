@@ -333,15 +333,22 @@
               travis.html('Travis')
             }
           }
+
+          // Now set the number of packages in each category
+          var types = ["full_pass", "full_fail", "using_pass", "using_fail", "not_possible"]
+          for( idx in types) {
+            var count = $('#container_'+types[idx]+' div.cell').length
+            console.log( "type " + types[idx] + ": " + count )
+            $('#'+types[idx]+'_count').html(count)
+          }
         }))
 
         $.when.apply($, promises).done(function(){
           // Any <abbr> tags with .timeago applied to it will get automagically updated!
           $('abbr.timeago').timeago();
 
-          $('a.collapser').unbind('click').click(function(evt) {
+          $('a.collapser').click(function(evt) {
             evt.preventDefault()
-            console.log('click!')
             target = $('#'+$(this).attr('data-target'))
             if( target.is(':visible') )
               $(this).html('-')
@@ -406,35 +413,35 @@
         </div>
 
         <h4 class="cell cell_full_pass">[<a class="collapser" href="" data-target="container_full_pass">+</a>]
-          Tests Passing
+          Tests Passing (<span id="full_pass_count">0</span>)
           <span style="font-size:smaller;float:right">(<span style="font-family:courier">using $pkg</span> passes, all tests pass)</span>
         </h4>
         <div id="container_full_pass" class="collapsable">
         </div>
 
         <h4 class="cell cell_full_fail">[<a class="collapser" href="" data-target="container_full_fail">+</a>]
-          Tests Failing
+          Tests Failing (<span id="full_fail_count">0</span>)
           <span style="font-size:smaller;float:right">(<span style="font-family:courier">using $pkg</span> passes, tests fail)</span>
         </h4>
         <div id="container_full_fail" class="collapsable">
         </div>
 
         <h4 class="cell cell_using_pass">[<a class="collapser" href="" data-target="container_using_pass">+</a>]
-          Tests Missing
+          Tests Missing (<span id="using_pass_count">0</span>)
           <span style="font-size:smaller;float:right">(<span style="font-family:courier">using $pkg</span> passes, tests missing)</span>
         </h4>
         <div id="container_using_pass" class="collapsable">
         </div>
 
         <h4 class="cell cell_using_fail">[<a class="collapser" href="" data-target="container_using_fail">+</a>]
-          Package Unloadable
+          Package Unloadable (<span id="using_fail_count">0</span>)
           <span style="font-size:smaller;float:right">(<span style="font-family:courier">using $pkg</span> fails)</span>
         </h4>
         <div id="container_using_fail" class="collapsable">
         </div>
 
         <h4 class="cell cell_not_possible">[<a class="collapser" href="" data-target="container_not_possible">+</a>]
-          Package Excused
+          Package Excused (<span id="not_possible_count">0</span>)
         </h4>
         <div id="container_not_possible" class="collapsable">
         </div>
