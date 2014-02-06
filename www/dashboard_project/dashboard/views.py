@@ -8,10 +8,6 @@ import urllib2, json
 def JSONResponse(data):
 	return HttpResponse( json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json" )
 
-# We've only got one template, and it's barely a template at all!
-def index(request):
-	return render( request, 'dashboard/index.html')
-
 # Updates a django model with a dict, mapping keys to properties inside that model.  Saves the model
 def update_model( model, data, keys ):
 	# If keys is a list, use same keys for model and data
