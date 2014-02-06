@@ -351,9 +351,9 @@
             evt.preventDefault()
             target = $('#'+$(this).attr('data-target'))
             if( target.is(':visible') )
-              $(this).html('-')
-            else
               $(this).html('+')
+            else
+              $(this).html('-')
             target.slideToggle()
           })
         })
