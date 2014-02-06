@@ -49,7 +49,10 @@ def put_nightly_build(request):
 
 		# Find the old NightlyBuild, creating if it does not already exist.  Then update it.
 		nightly_obj = NightlyBuild.objects.get_or_create(target=data['target'])[0]
+		if not 'time' in data:
+			nightly_obj.time = now()
 		update_model( nightly_obj, data, ['time', 'log_url', 'url'] )
+
 	return HttpResponse()
 
 # Returns a dict, indexed by branch
@@ -106,6 +109,8 @@ def put_codespeed_build(request):
 
 		# Delete the CodespeedBuild object that corresponds to this env/blas combo (if it exists)
 		codespeed_obj = CodespeedBuild.objects.get_or_create(env=env[0])[0]
+		if not 'time' in data:
+			codespeed_obj.time = now()
 		update_model( codespeed_obj, data, ['blas', 'commit', 'time'] )
 	return HttpResponse()
 
