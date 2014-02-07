@@ -10,9 +10,6 @@ class NightlyBuild(models.Model):
     # The target this build is for ("OSX 10.7+ Nightly", "Ubuntu Nightly", etc...)
     target = models.TextField('Target Executable')
 
-    # The URL to download the logfile of the compilation
-    log_url = models.TextField('Compilation Log URL')
-
     # download URL
     url = models.TextField('Download URL')
 

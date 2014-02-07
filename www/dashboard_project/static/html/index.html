@@ -157,7 +157,12 @@
               template +=     '</div>'
               
               template +=     '<div style="padding: 0px 0px 0px 0px" class="col-xs-2 text-right">'
-              template +=     '[<a href="'+data[target]['log_url']+'" target="_blank">log</a>]&nbsp;&nbsp;'
+
+              // Strip out hostname and filename from download url, to generate logfile
+              var l = document.createElement("a");
+              l.href = data[target]['url'];
+              var filename = data[target]['url'].split('/').pop();
+              template +=     '[<a href="http://'+l.hostname+'/logs/'+filename+'.log" target="_blank">log</a>]&nbsp;&nbsp;'
               template +=     '[<a id="'+id+'" href="'+data[target]['url']+'" target="_blank">download</a>]'
               template +=     '</div>'
               template += '</div>'

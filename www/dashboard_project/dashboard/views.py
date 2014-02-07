@@ -36,7 +36,7 @@ def dict_model( model, keys ):
 # Returns a dict, indexed by target, pointing to the time
 def get_nightly_builds(request):
 	nightly_builds = NightlyBuild.objects.all()
-	return JSONResponse({b.target:{'time':b.time, 'url':b.url, 'log_url':b.log_url} for b in nightly_builds})
+	return JSONResponse({b.target:{'time':b.time, 'url':b.url} for b in nightly_builds})
 
 # Store a nightly build
 def put_nightly_build(request):
@@ -47,7 +47,7 @@ def put_nightly_build(request):
 		nightly_obj = NightlyBuild.objects.get_or_create(target=data['target'])[0]
 		if not 'time' in data:
 			nightly_obj.time = now()
-		update_model( nightly_obj, data, ['time', 'log_url', 'url'] )
+		update_model( nightly_obj, data, ['time', 'url'] )
 
 	return HttpResponse()
 
