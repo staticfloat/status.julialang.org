@@ -159,10 +159,8 @@
               template +=     '<div style="padding: 0px 0px 0px 0px" class="col-xs-2 text-right">'
 
               // Strip out hostname and filename from download url, to generate logfile
-              var l = document.createElement("a");
-              l.href = data[target]['url'];
-              var filename = data[target]['url'].split('/').pop();
-              template +=     '[<a href="http://'+l.hostname+'/logs/'+filename+'.log" target="_blank">log</a>]&nbsp;&nbsp;'
+              var filename = data[target]['url'].split('/').pop().replace(/\.[^/.]+$/, "")
+              template +=     '[<a href="http://s3.amazonaws.com/julialang/logs/'+filename+'.log" target="_blank">log</a>]&nbsp;&nbsp;'
               template +=     '[<a id="'+id+'" href="'+data[target]['url']+'" target="_blank">download</a>]'
               template +=     '</div>'
               template += '</div>'
