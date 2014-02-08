@@ -104,10 +104,10 @@ def put_codespeed_build(request):
 			return HttpResponse()
 
 		# Delete the CodespeedBuild object that corresponds to this env/blas combo (if it exists)
-		codespeed_obj = CodespeedBuild.objects.get_or_create(env=env[0])[0]
+		codespeed_obj = CodespeedBuild.objects.get_or_create(env=env[0],blas=data['blas'])[0]
 		if not 'time' in data:
 			codespeed_obj.time = now()
-		update_model( codespeed_obj, data, ['blas', 'commit', 'time'] )
+		update_model( codespeed_obj, data, ['commit', 'time'] )
 	return HttpResponse()
 
 
