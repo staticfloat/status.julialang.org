@@ -101,7 +101,6 @@ class PackageBuild(models.Model):
 
     # Flags for specific checks from Package Eval (true/false)
     pkgreq = models.BooleanField('Package REQUIRE file present', default=False)
-    metareq = models.BooleanField('METADATA REQUIRE file present', default=False)
     travis = models.BooleanField('Travis setup', default=False)
 
     def __unicode__(self):

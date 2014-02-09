@@ -149,7 +149,7 @@ def put_package_build(request):
 		update_model( package_obj, data, ['name', 'url', 'license', 'status', 'version', 'details', 'gitsha', 'licfile'] )
 
 		# Special treatment for boolean values
-		for key in ['pkgreq', 'metqreq', 'travis']:
+		for key in ['pkgreq', 'travis']:
 			if key in data:
 				setattr(package_obj, key, data[key] == "true")
 		package_obj.save()

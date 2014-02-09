@@ -269,10 +269,9 @@
               template += '    <div class="pkg-name col-xs-12"></div>'
               template += '  </div>'
               template += '  <div style="margin-left: 0px; margin-right:0px" class="row">'
-              template += '    <div class="pkg-details col-xs-7 bordered"></div>'
+              template += '    <div class="pkg-details col-xs-8 bordered"></div>'
               template += '    <div class="pkg-license col-xs-1 bordered"></div>'
               template += '    <div class="pkg-pkgreq col-xs-1 bordered"></div>'
-              template += '    <div class="pkg-metareq col-xs-1 bordered"></div>'
               template += '    <div class="pkg-travis col-xs-1 bordered"></div>'
               template += '  </div>'
               template += '</div>'
@@ -310,16 +309,6 @@
             } else {
               pkgreq.addClass("full_fail")
               pkgreq.html('<a href="'+d['url']+'/blob/master">Pkg</a>')
-            }
-
-            metareq = $(div).find('.pkg-metareq')
-            metareq.removeClass("full_pass full_fail")
-            if( d['metareq'] ) {
-              metareq.addClass("full_pass")
-              metareq.html('<a href="https://github.com/JuliaLang/METADATA.jl/blob/metadata-v2/'+names[idx]+'/versions/'+d['version']+'/requires">Meta</a>')
-            } else {
-              metareq.addClass("full_fail")
-              metareq.html('<a href="https://github.com/JuliaLang/METADATA.jl/blob/metadata-v2/'+names[idx]+'/versions">Meta</a>')
             }
 
             travis = $(div).find('.pkg-travis')
@@ -397,7 +386,7 @@
             </div>
           </div>
           <div style="margin-left: 0px; margin-right:0px" class="row">
-            <div class="col-xs-7 bordered">
+            <div class="col-xs-8 bordered">
               Detailed Description
             </div>
             <div class="col-xs-1 bordered">
@@ -405,9 +394,6 @@
             </div>
             <div class="col-xs-1 bordered">
               Pkg REQUIRE
-            </div>
-            <div class="col-xs-1 bordered">
-              METADATA REQUIRE
             </div>
             <div class="col-xs-1 bordered">
               Travis
