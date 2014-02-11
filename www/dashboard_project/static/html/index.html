@@ -348,7 +348,6 @@
           var types = ["full_pass", "full_fail", "using_pass", "using_fail", "not_possible"]
           for( idx in types ) {
             var count = $('#container_' + types[idx] + ' div.cell').length
-            console.log( "type " + types[idx] + ": " + count )
             $('#' + types[idx] + '_count').html(count)
           }
         }))
