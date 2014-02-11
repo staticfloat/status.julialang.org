@@ -95,7 +95,7 @@
 
       $(document).ready(function() {
         // We're going to start a timer that will update the data every minute
-        update();
+        promises = update();
         setInterval( update, 60*1000 )
 
         // Also register a resize handler that will stop our graphs from trying to redraw eagerly
@@ -119,6 +119,23 @@
             }, 50)
           })
         })
+
+        $.when.apply($, promises).always(function() {
+          console.log( "timeago, collapser!")
+          // Any <abbr> tags with .timeago applied to it will get automagically updated!
+          $('abbr.timeago').timeago();
+
+          $('a.collapser').click(function(evt) {
+            evt.preventDefault()
+            target = $('#' + $(this).attr('data-target'))
+            if( target.is(':visible') )
+              $(this).html('+')
+            else
+              $(this).html('-')
+            target.slideToggle()
+          })
+        })
+        $('.collapsable').hide()
       });
 
       // Santize a DOM selector so that we aren't using invalid characters
@@ -336,21 +353,7 @@
           }
         }))
 
-        $.when.apply($, promises).done(function() {
-          // Any <abbr> tags with .timeago applied to it will get automagically updated!
-          $('abbr.timeago').timeago();
-
-          $('a.collapser').click(function(evt) {
-            evt.preventDefault()
-            target = $('#' + $(this).attr('data-target'))
-            if( target.is(':visible') )
-              $(this).html('+')
-            else
-              $(this).html('-')
-            target.slideToggle()
-          })
-        })
-        $('.collapsable').hide()
+        return promises;
       }
     </script>
   </head>
