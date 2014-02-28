@@ -312,7 +312,12 @@
             details.addClass(d['status'])
 
             license = $(div).find('.pkg-license')
-            license.html('<a href="' + d['url'] + '/blob/master/' + d['licfile'] + '">' + d['license'] + '</a>')
+            if (d['licfile'] === '') {
+              license.html('<a href="' + d['url'] + '">' + d['license'] + '</a>')  
+            } else {
+              license.html('<a href="' + d['url'] + '/blob/master/' + d['licfile'] + '">' + d['license'] + '</a>')  
+            }
+            
             license.removeClass("full_pass full_fail")
             if( d['license'] != "Unknown" )
               license.addClass("full_pass")
