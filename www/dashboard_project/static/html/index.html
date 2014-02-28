@@ -125,7 +125,6 @@
         })
 
         $.when.apply($, promises).always(function() {
-          console.log( "timeago, collapser!")
           // Any <abbr> tags with .timeago applied to it will get automagically updated!
           $('abbr.timeago').timeago();
 
@@ -172,7 +171,7 @@
               template =  '<div class="cell row">'
               template +=   '<div style="padding: 0px 0px 0px 0px" class="col-xs-10">'
               template +=     target + ' nightly last built: '
-              template +=     '<abbr id="' + id + '" class="timeago" title="' + data[target]['time'] + '">'
+              template +=     '<abbr id="' + id + '" class="timeago timeago-colored" title="' + data[target]['time'] + '">'
               template +=       $.timeago.parse(data[target]['time']).toLocaleString()
               template +=     '</abbr>'
               template +=   '</div>'
@@ -244,7 +243,7 @@
                 id = 'codespeed-' + sanitize(name + '-' + blas)
                 template += '<div class="codespeed_cell col-sm-3">'
                 template +=   blas + ': '
-                template +=   '<abbr id="' + id + '" class="timeago" title="' + blas_data[name][blas]['time'] + '">'
+                template +=   '<abbr id="' + id + '" class="timeago timeago-colored" title="' + blas_data[name][blas]['time'] + '">'
                 template +=     $.timeago.parse(blas_data[name][blas]['time']).toLocaleString()
                 template +=     ' ' + blas_data[name][blas]['commit']
                 template +=   '</abbr>'
@@ -306,11 +305,24 @@
             short_sha = d['gitsha'].substring(0, 8)
             url_split = d['url'].split('/')
             owner = url_split[url_split.length-2]
-            pkgname.html( '<a href="' + d['url'] + '">' + names[idx] + '</a>' +
-                          ' - <a href="' + d['url'] + '/tree/' + d['gitsha'] + '">' +
-                          d['version'] + '/' + short_sha + '</a> (' + 
-                          jQuery.timeago(d['gitdate']) + ') - ' +
-                          '<a href="https://github.com/' + owner + '">' + owner + '</a>' )
+
+            pkgname_html  = '<a href="' + d['url'] + '">'
+            pkgname_html +=   names[idx]
+            pkgname_html += '</a>'
+            pkgname_html += ' - '
+            pkgname_html += '<a href="' + d['url'] + '/tree/' + d['gitsha'] + '">'
+            pkgname_html +=   d['version'] + '/' + short_sha
+            pkgname_html += '</a>'
+            pkgname_html += ' ('
+            pkgname_html += '<abbr class="timeago" title="' + d['gitdate'] + '">'
+            pkgname_html +=   $.timeago.parse(d['gitdate']).toLocaleString()
+            pkgname_html += '</abbr>'
+            pkgname_html += ') - '
+            pkgname_html += '<a href="https://github.com/' + owner + '">'
+            pkgname_html +=   owner
+            pkgname_html += '</a>'
+
+            pkgname.html( pkgname_html )
             $(div).removeClass("cell_full_pass cell_full_fail cell_using_pass cell_using_fail")
             $(div).addClass('cell_' + d['status'])
 

@@ -160,24 +160,26 @@
     if (!isNaN(data.datetime)) {
       // NABIL: Patch this method to apply styles automagically
       dist = distance(data.datetime)
-      if ( $s.cutoff == 0 || dist < $s.cutoff) {
+      if ($s.cutoff == 0 || dist < $s.cutoff) {
         $(this).text(inWords(data.datetime))
-        if( dist < 24*60*60*1000 ) {
-          if( !$(this).hasClass('fresh') ) {
-            $(this).addClass('fresh')
-            $(this).removeClass('stale')
-            $(this).removeClass('frozen')
-          }
-        } else if( dist < 48*60*60*1000 ) {
-          if( !$(this).hasClass('stale') ) {
-            $(this).addClass('stale')
+        if ( $(this).hasClass('timeago-colored') ) {
+          if( dist < 24*60*60*1000 ) {
+            if( !$(this).hasClass('fresh') ) {
+              $(this).addClass('fresh')
+              $(this).removeClass('stale')
+              $(this).removeClass('frozen')
+            }
+          } else if( dist < 48*60*60*1000 ) {
+            if( !$(this).hasClass('stale') ) {
+              $(this).addClass('stale')
+              $(this).removeClass('fresh')
+              $(this).removeClass('frozen')
+            }
+          } else if( !$(this).hasClass('frozen') ) {
+            $(this).addClass('frozen')
             $(this).removeClass('fresh')
-            $(this).removeClass('frozen')
+            $(this).removeClass('stale')
           }
-        } else if( !$(this).hasClass('frozen') ) {
-          $(this).addClass('frozen')
-          $(this).removeClass('fresh')
-          $(this).removeClass('stale')
         }
       }
     }
