@@ -300,9 +300,12 @@
             // Now, update the above div with the new information stored in data
             pkgname = $(div).find('.pkg-name')
             short_sha = d['gitsha'].substring(0, 8)
+            url_split = d['url'].split('/')
+            owner = url_split[url_split.length-2]
             pkgname.html( '<a href="' + d['url'] + '">' + names[idx] + '</a>' +
-                          '(<a href="' + d['url'] + '/tree/' + d['gitsha'] + '">' +
-                          d['version'] + '/' + short_sha + '</a>)' )
+                          ' (<a href="' + d['url'] + '/tree/' + d['gitsha'] + '">' +
+                          d['version'] + '/' + short_sha + '</a> - ' +
+                          '<a href="https://github.com/' + owner + '">' + owner + '</a>)' )
             $(div).removeClass("cell_full_pass cell_full_fail cell_using_pass cell_using_fail")
             $(div).addClass('cell_' + d['status'])
 
