@@ -128,7 +128,7 @@ def get_package_builds(request):
 	data = PackageBuild.objects.all()
 
 	# These are the fields we'll send from each PackageBuild
-	fields = ['url', 'license', 'licfile', 'status', 'details', 'gitsha', 'pkgreq', 'metareq', 'travis', 'version']
+	fields = ['url', 'license', 'licfile', 'status', 'details', 'gitsha', 'pkgreq', 'travis', 'version', 'gitdate']
 	
 	# Create a dict out of each model, and point to it by each model's name
 	obj = {p.name: dict_model(p, fields) for p in data}
@@ -146,7 +146,7 @@ def put_package_build(request):
 			
 		# Delete this PackageBuild if it already exists
 		package_obj = PackageBuild.objects.get_or_create(name=data['name'])[0]
-		update_model( package_obj, data, ['name', 'url', 'license', 'status', 'version', 'details', 'gitsha', 'licfile'] )
+		update_model( package_obj, data, ['name', 'url', 'license', 'status', 'version', 'details', 'gitsha', 'gitdate', 'licfile'] )
 
 		# Special treatment for boolean values
 		for key in ['pkgreq', 'travis']:

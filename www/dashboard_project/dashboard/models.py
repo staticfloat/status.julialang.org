@@ -88,6 +88,7 @@ class PackageBuild(models.Model):
     # The version of the package being tested (v0.1.8/d34df00d)
     version = models.TextField('Version of package (from METADATA)')
     gitsha = models.TextField('git SHA of package')
+    gitdate = models.TextField('Date of commit of current version')
 
     # License of the package (MIT/LICENSE.md)
     license = models.TextField('License type')
