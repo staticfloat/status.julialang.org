@@ -14,4 +14,6 @@ urlpatterns = patterns('',
     url(r'^get/package$', views.get_package_builds),
     url(r'^put/package$', views.put_package_build),
     url(r'^get/package_run$', views.get_package_run),
+
+    url(r'^get/julia_version_status$', views.get_julia_version_status),
 )

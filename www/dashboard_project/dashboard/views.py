@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseServerError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render
 from django.utils.timezone import now
@@ -124,14 +124,19 @@ def get_codespeed_environments(request):
 	return JSONResponse({env.name:env.OS for env in CodespeedEnvironment.objects.all()})
 
 def get_package_builds(request):
-	# Get all Package Builds
-	data = PackageBuild.objects.all()
+	# Get our JuliaVersionStatus object
+	if not len(JuliaVersionStatus.objects.all()):
+		return HttpResponseServerError('No JuliaVersionStatus objects created!')
+	jvs = JuliaVersionStatus.objects.get()
+
+	# Get all Package Builds for the currently configured stable and nightly builds
+	data = PackageBuild.objects.filter(jlver=jvs.stable) | PackageBuild.objects.filter(jlver=jvs.nightly)
 
 	# These are the fields we'll send from each PackageBuild
-	fields = ['url', 'license', 'licfile', 'status', 'details', 'gitsha', 'pkgreq', 'travis', 'version', 'gitdate']
+	fields = ['name', 'url', 'license', 'licfile', 'status', 'details', 'gitsha', 'pkgreq', 'travis', 'version', 'jlver', 'jlcommit', 'gitdate']
 	
 	# Create a dict out of each model, and point to it by each model's name
-	obj = {p.name: dict_model(p, fields) for p in data}
+	obj = [dict_model(p, fields) for p in data]
 	return JSONResponse(obj)
 
 def put_package_build(request):
@@ -145,8 +150,8 @@ def put_package_build(request):
 			PackageRun.objects.update(date=now())
 			
 		# Delete this PackageBuild if it already exists
-		package_obj = PackageBuild.objects.get_or_create(name=data['name'])[0]
-		update_model( package_obj, data, ['name', 'url', 'license', 'status', 'version', 'details', 'gitsha', 'gitdate', 'licfile'] )
+		package_obj = PackageBuild.objects.get_or_create(name=data['name'],jlver=data['jlver'])[0]
+		update_model( package_obj, data, ['name', 'url', 'license', 'status', 'version', 'jlcommit', 'details', 'gitsha', 'gitdate', 'licfile'] )
 
 		# Special treatment for boolean values
 		for key in ['pkgreq', 'travis']:
@@ -159,7 +164,13 @@ def put_package_build(request):
 def get_package_run(request):
 	if len(PackageRun.objects.all()):
 		return JSONResponse({'date':PackageRun.objects.get().date})
-	return JSONResponse({'date':''})
+	return HttpResponseServerError('No PackageRun objects created!')
+
+def get_julia_version_status(request):
+	if len(JuliaVersionStatus.objects.all()):
+		jvs = JuliaVersionStatus.objects.get()
+		return JSONResponse({'stable':jvs.stable, 'nightly':jvs.nightly})
+	return HttpResponseServerError('No JuliaVersionStatus objects created!')
 
 def clear_travis(request):
 	TravisBuild.objects.all().delete()

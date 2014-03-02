@@ -2,12 +2,12 @@
   "name": "Arduino",
   "url": "http://github.com/rennis250/Arduino.jl",
   "version": "0.0.0",
+  "jlver": "0.3",
   "gitsha": "abdcdacd",
   "license": "Unknown",
   "licfile": "LICENSE.md",
   "status": "using_fail",
   "details": "No tests, tried 'using Arduino', failed!",
   "pkgreq": "false",
-  "metareq": "false",
   "travis": "false"
 }

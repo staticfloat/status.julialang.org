@@ -77,6 +77,15 @@ class PackageRun(models.Model):
     date = models.DateTimeField('Date of last PackageEval.jl submission', default=now)
 
 
+# Stores the current stable and nightly versions (in MAJOR.MINOR) format
+class JuliaVersionStatus(models.Model):
+    # Stable version (0.2)
+    stable = models.TextField('Stable Version Number')
+
+    # Nightly version (0.3)
+    nightly = models.TextField('Nightly Verison Number')
+
+
 # Stores Package builds from PackageEval
 class PackageBuild(models.Model):
     # The name of the package (Nettle.jl)
@@ -85,8 +94,14 @@ class PackageBuild(models.Model):
     # The url of the package (http://github.com/JuliaLang/Nettle.jl)
     url = models.TextField('Repository URL')
 
-    # The version of the package being tested (v0.1.8/d34df00d)
+    # The version of Julia this package was tested against (0.2/deadbeef)
+    jlver = models.TextField('Julia version')
+    jlcommit = models.TextField('Julia commit')
+
+    # The version of the package being tested (v0.1.8)
     version = models.TextField('Version of package (from METADATA)')
+
+    # The SHA and date of the git commit being tested (baadf00d/2014-01-29 11:43:44 -0500)
     gitsha = models.TextField('git SHA of package')
     gitdate = models.TextField('Date of commit of current version')
 
