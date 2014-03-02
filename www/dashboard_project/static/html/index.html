@@ -348,8 +348,9 @@
                 // Found no license and no file
                 license.addClass("using_fail")
               } else {
+                // License file, but empty or TBD probably
                 license.addClass("full_fail")
-                license.attr('title', 'Unrecognized license (license file probably empty or set to "TBD")')
+                license.attr('title', 'Unrecognized license')
               }
             }
 
