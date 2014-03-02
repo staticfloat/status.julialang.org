@@ -358,10 +358,10 @@
             pkgreq.removeClass("full_pass full_fail")
             if( d['pkgreq'] ) {
               pkgreq.addClass("full_pass")
-              pkgreq.html('<a href="' + d['url'] + '/blob/master/REQUIRE">Pkg</a>')
+              pkgreq.html('<a href="' + d['url'] + '/blob/master/REQUIRE">REQUIRE</a>')
             } else {
               pkgreq.addClass("full_fail")
-              pkgreq.html('<a href="' + d['url'] + '/blob/master">Pkg</a>')
+              pkgreq.html('<a href="' + d['url'] + '">REQUIRE</a>')
             }
 
             travis = $(div).find('.pkg-travis')
@@ -375,7 +375,8 @@
               travis.addClass("full_pass")
             } else {
               travis.addClass("full_fail")
-              travis.html('Travis')
+              travis.text('Travis')
+              travis.attr('title', "Travis CI hasn't been set up for this package")
             }
           }
 
@@ -442,10 +443,10 @@
               License
             </div>
             <div class="col-xs-1 bordered pkg-pkgreq">
-              Pkg REQUIRE
+              <span title="Package requirements">REQUIRE</span>
             </div>
             <div class="col-xs-1 bordered pkg-travis">
-              Travis
+              <span title="Travis continuous integration">Travis</span>
             </div>
           </div>
         </div>
