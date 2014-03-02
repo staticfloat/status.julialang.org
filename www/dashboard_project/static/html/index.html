@@ -333,8 +333,10 @@
 
             license = $(div).find('.pkg-license')
             if ( d['licfile'] === '' ) {
-              license.html('<a href="' + d['url'] + '">' + d['license'] + '</a>')  
+              license.text( d['license'] )
+              license.attr( 'title', 'No license file found')
             } else {
+              // Found a license file, link to it
               license.html('<a href="' + d['url'] + '/blob/master/' + d['licfile'] + '">' + d['license'] + '</a>')  
             }
             
@@ -348,6 +350,7 @@
               } else {
                 // License file, but empty or TBD probably
                 license.addClass("full_fail")
+                license.attr('title', 'Unrecognized license')
               }
             }
 
