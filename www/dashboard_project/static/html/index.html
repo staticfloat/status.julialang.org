@@ -207,7 +207,6 @@
 
               // Strip out hostname and filename from download url, to generate logfile
               var filename = data[target]['url'].split('/').pop().replace(/\.[^/.]+$/, "")
-              
 
               template +=     '[<a href="http://s3.amazonaws.com/julialang/logs/' + filename + '.log" '
               template +=     'target="_blank">log</a>]&nbsp;&nbsp;'
@@ -377,7 +376,7 @@
               // Found a license file, link to it
               license.html('<a href="' + d['url'] + '/blob/master/' + d['licfile'] + '">' + d['license'] + '</a>')  
             }
-            
+
             license.removeClass("full_pass full_fail")
             if( d['license'] != "Unknown" ) {
               license.addClass("full_pass")
@@ -479,7 +478,7 @@
         <span id="jlver" class="text-muted" style="float:right;padding-right:10px">
         </span>
         <h5>Layout legend:</h5>
-  
+
         <div class="cell">
           <div style="margin-left: 0px; margin-right:0px" class="row">
             <div class="bordered col-xs-11">
@@ -501,7 +500,7 @@
             </div>
           </div>
         </div>
-  
+
         <h4 class="cell cell_full_pass">
           [<a class="collapser" href="" data-target="container_full_pass">+</a>]
           Tests Passing (<span id="full_pass_count">0</span>)
