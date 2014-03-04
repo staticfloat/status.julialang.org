@@ -55,11 +55,11 @@
       }
 
       /* shamelessly stolen from iaindunning.com */
-      .full_pass    { background-color: #55FF55; } /*Tests passing*/
-      .full_fail    { background-color: #FF9922; } /*Tests failed*/
-      .using_pass   { background-color: #AAAAFF; } /*Tests missing*/
-      .using_fail   { background-color: #FF4444; } /*Package unloadable*/
-      .not_possible { background-color: #AFAFAF; } /*Package excused*/
+      .full_pass    { background-color: #55FF55; } /* Tests passing */
+      .full_fail    { background-color: #FF9922; } /* Tests failed */
+      .using_pass   { background-color: #AAAAFF; } /* Tests missing */
+      .using_fail   { background-color: #FF4444; } /* Package unloadable */
+      .not_possible { background-color: #AFAFAF; } /* Package excused */
 
       .cell_using_fail   { background-color: #ffcccc; }
       .cell_using_pass   { background-color: #ddddff; }
@@ -207,8 +207,9 @@
 
               // Strip out hostname and filename from download url, to generate logfile
               var filename = data[target]['url'].split('/').pop().replace(/\.[^/.]+$/, "")
-              
-              template +=     '[<a href="http://s3.amazonaws.com/julialang/logs/' + filename + '.log" target="_blank">log</a>]&nbsp;&nbsp;'
+
+              template +=     '[<a href="http://s3.amazonaws.com/julialang/logs/' + filename + '.log" '
+              template +=     'target="_blank">log</a>]&nbsp;&nbsp;'
               template +=     '[<a id="' + id + '" href="' + data[target]['url'] + '" target="_blank">download</a>]'
               template +=   '</div>'
               template += '</div>'
@@ -270,7 +271,8 @@
                 id = 'codespeed-' + sanitize(name + '-' + blas)
                 template += '<div class="codespeed_cell col-sm-3">'
                 template +=   blas + ': '
-                template +=   '<abbr id="' + id + '" class="timeago timeago-colored" title="' + blas_data[name][blas]['time'] + '">'
+                template +=   '<abbr id="' + id + '" class="timeago timeago-colored" title="'
+                template +=   blas_data[name][blas]['time'] + '">'
                 template +=     $.timeago.parse(blas_data[name][blas]['time']).toLocaleString()
                 template +=     ' ' + blas_data[name][blas]['commit']
                 template +=   '</abbr>'
@@ -374,7 +376,7 @@
               // Found a license file, link to it
               license.html('<a href="' + d['url'] + '/blob/master/' + d['licfile'] + '">' + d['license'] + '</a>')  
             }
-            
+
             license.removeClass("full_pass full_fail")
             if( d['license'] != "Unknown" ) {
               license.addClass("full_pass")
@@ -419,7 +421,6 @@
           onSwitchChange();
         }))
 
-  
         $('#jlver_switch').bootstrapSwitch();
         $('#jlver_switch').on('switchChange', onSwitchChange );
         return promises;
@@ -477,11 +478,11 @@
         <span id="jlver" class="text-muted" style="float:right;padding-right:10px">
         </span>
         <h5>Layout legend:</h5>
-        
+
         <div class="cell">
           <div style="margin-left: 0px; margin-right:0px" class="row">
             <div class="bordered col-xs-11">
-              Package name  - version/git SHA (date) - author/organization
+              Package name - version/git SHA (date) - author/organization
             </div>
           </div>
           <div style="margin-left: 0px; margin-right:0px" class="row">
