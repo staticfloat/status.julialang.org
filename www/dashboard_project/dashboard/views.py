@@ -61,7 +61,7 @@ def get_travis_builds(request):
 		for build in branch.travisbuild_set.all():
 			branch_builds.append({'commit': build.commit, 'time': build.time, 'result': build.result })
 		all_builds[branch.branch] = branch_builds;
-	
+
 	return JSONResponse(all_builds)
 
 def put_travis_build(request):
@@ -134,7 +134,7 @@ def get_package_builds(request):
 
 	# These are the fields we'll send from each PackageBuild
 	fields = ['name', 'url', 'license', 'licfile', 'status', 'details', 'gitsha', 'pkgreq', 'travis', 'version', 'jlver', 'jlcommit', 'gitdate']
-	
+
 	# Create a dict out of each model, and point to it by each model's name
 	obj = [dict_model(p, fields) for p in data]
 	return JSONResponse(obj)
@@ -148,7 +148,7 @@ def put_package_build(request):
 			PackageRun.objects.create()
 		else:
 			PackageRun.objects.update(date=now())
-			
+
 		# Delete this PackageBuild if it already exists
 		package_obj = PackageBuild.objects.get_or_create(name=data['name'],jlver=data['jlver'])[0]
 		update_model( package_obj, data, ['name', 'url', 'license', 'status', 'version', 'jlcommit', 'details', 'gitsha', 'gitdate', 'licfile'] )
@@ -159,6 +159,27 @@ def put_package_build(request):
 				setattr(package_obj, key, data[key] == "true")
 		package_obj.save()
 	return HttpResponse()
+
+
+def get_package_log(request, jlverstr, pkgname):
+	# Get our JuliaVersionStatus object
+	if not len(JuliaVersionStatus.objects.all()):
+		return HttpResponseServerError('No JuliaVersionStatus objects created!')
+	jvs = JuliaVersionStatus.objects.get()
+
+	# Get all Package Builds for the currently configured stable and nightly builds
+	data = []
+	if jlverstr.lower() == 'stable':
+		data = PackageBuild.objects.filter(jlver=jvs.stable, name=pkgname)
+	elif jlverstr.lower() == 'nightly':
+		data = PackageBuild.objects.filter(jlver=jvs.nightly, name=pkgname)
+	else:
+		return HttpResponseServerError('Invalid julia version type ' + jlverstr)
+
+	if len(data) == 0:
+		return HttpResponseServerError('No ' +jlverstr.lower()+ ' packages found that match ' + pkgname)
+
+	return HttpResponse(data.get().testlog)
 
 
 def get_package_run(request):

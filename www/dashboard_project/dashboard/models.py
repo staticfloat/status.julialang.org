@@ -119,5 +119,8 @@ class PackageBuild(models.Model):
     pkgreq = models.BooleanField('Package REQUIRE file present', default=False)
     travis = models.BooleanField('Travis setup', default=False)
 
+    # Full log output of a testing run
+    testlog = models.TextField('Test log')
+
     def __unicode__(self):
         return self.name
