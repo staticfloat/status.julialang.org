@@ -210,7 +210,7 @@
 
               template +=     '[<a href="http://s3.amazonaws.com/julialang/logs/' + filename + '.log" '
               template +=     'target="_blank">log</a>]&nbsp;&nbsp;'
-              template +=     '[<a id="' + id + '" href="' + data[target]['url'] + '" target="_blank">download</a>]'
+              template +=     '[<a id="' + id + '" href="/download/' + target + '" target="_blank">download</a>]'
               template +=   '</div>'
               template += '</div>'
               $('#container_nightly').append(template)
