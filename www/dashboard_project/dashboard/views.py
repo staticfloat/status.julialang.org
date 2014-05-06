@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseServerError, HttpResponseRedirect
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render
 from django.utils.timezone import now
@@ -197,3 +197,9 @@ def clear_travis(request):
 	TravisBuild.objects.all().delete()
 	TravisBranch.objects.all().delete()
 	return HttpResponse("\_[;_;]_/<br/>sad robot is sad, yet filled with joy")
+
+def get_latest(request, target):
+	nightly_builds = NightlyBuild.objects.filter(target=target)
+	if not len(nightly_builds):
+		return HttpResponse("No such build target \"%s\""%(target))
+	return HttpResponseRedirect(nightly_builds[0].url)
