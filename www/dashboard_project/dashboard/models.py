@@ -10,6 +10,9 @@ class NightlyBuild(models.Model):
     # The target this build is for ("OSX 10.7+ Nightly", "Ubuntu Nightly", etc...)
     target = models.TextField('Target Executable')
 
+    # The version string of this build
+    version = models.TextField('Version string')
+
     # download URL
     url = models.TextField('Download URL')
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from datetime import timedelta, datetime
-import json, os, requests, random, string, sys
+import json, os, requests, random, string, sys, random
 
 # This is a test script to auto-generate a bunch of data for status.julialang.org (running locally, of course)
 # It requires the [requests] module to run properly
@@ -8,11 +8,13 @@ import json, os, requests, random, string, sys
 
 # Generate four nightly builds, each one 17 hours earlier than the next, starting from now:
 print 'Uploading nightly builds....'
-targets = ["OSX 10.6", "OSX 10.7+", "Ubuntu", "Windows"]
+targets = ["OSX 10.6", "OSX 10.7+", "win32", "win64"]
 for idx in range(len(targets)):
 	date = datetime.now() - timedelta(hours=idx*17)
-	obj = {	'target':targets[idx],
+	version = ''.join(random.choice('0123456789abcdef') for i in range(9))
+	obj = { 'target':targets[idx],
 			'time':date.isoformat(),
+			'version':version,
 			'url':'http://julialang.org/'+targets[idx]}
 
 	requests.post("http://localhost:8000/put/nightly", data=json.dumps(obj))

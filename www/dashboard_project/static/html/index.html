@@ -196,15 +196,15 @@
             } else {
               // Otherwise, create the whole DOM mess
               template =  '<div class="cell row">'
-              template +=   '<div style="padding: 0px 0px 0px 0px" class="col-xs-10">'
+              template +=   '<div style="padding: 0px 0px 0px 0px" class="col-xs-8">'
               template +=     target + ' nightly last built: '
               template +=     '<abbr id="' + id + '" class="timeago timeago-colored" title="' + data[target]['time'] + '">'
               template +=       $.timeago.parse(data[target]['time']).toLocaleString()
               template +=     '</abbr>'
               template +=   '</div>'
 
-              template +=   '<div style="padding: 0px 0px 0px 0px" class="col-xs-2 text-right">'
-
+              template +=   '<div style="padding: 0px 0px 0px 0px" class="col-xs-4 text-right">'
+              template +=     '<span class="text-muted">'+data[target]['version']+'</span> '
               // Strip out hostname and filename from download url, to generate logfile
               var filename = data[target]['url'].split('/').pop().replace(/\.[^/.]+$/, "")
 
@@ -374,7 +374,7 @@
               license.attr( 'title', 'No license file found')
             } else {
               // Found a license file, link to it
-              license.html('<a href="' + d['url'] + '/blob/master/' + d['licfile'] + '">' + d['license'] + '</a>')  
+              license.html('<a href="' + d['url'] + '/blob/master/' + d['licfile'] + '">' + d['license'] + '</a>')
             }
 
             license.removeClass("full_pass full_fail")
@@ -428,7 +428,7 @@
 
       function onSwitchChange() {
         update_section_counts();
-        $('#jlver').html("Julia version v" + jvs[get_curr_jlver()] )
+        $('#jlver').html("Julia version v" + jvs[get_curr_jlver()] ).fadeIn();
         $('.'+get_curr_jlver()+'_build').show();
         $('.'+get_other_jlver()+'_build').hide();
       }
@@ -475,7 +475,7 @@
       </h3>
 
       <div id="container_package">
-        <span id="jlver" class="text-muted" style="float:right;padding-right:10px">
+        <span id="jlver" class="text-muted" style="float:right;padding-right:10px;display:none">
         </span>
         <h5>Layout legend:</h5>
 
