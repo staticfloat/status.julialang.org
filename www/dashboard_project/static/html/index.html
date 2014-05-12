@@ -205,7 +205,10 @@
 
               template +=   '<div style="padding: 0px 0px 0px 0px" class="col-xs-4 text-right">'
               template +=     '<span class="text-muted">'+data[target]['version']+'</span> '
-              template +=     '[<a href="http://s3.amazonaws.com/julianightlies/logs/' + data[target]['url'] + '.log" '
+              // Strip out hostname and filename from download url, to generate logfile
+              var filename = data[target]['url'].split('/').pop().replace(/\.[^/.]+$/, "")
+
+              template +=     '[<a href="http://s3.amazonaws.com/julianightlies/logs/' + filename + '.log" '
               template +=     'target="_blank">log</a>]&nbsp;&nbsp;'
               template +=     '[<a id="' + id + '" href="/download/' + target + '" target="_blank">download</a>]'
               template +=   '</div>'
