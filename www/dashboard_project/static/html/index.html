@@ -207,10 +207,14 @@
               template +=     '<span class="text-muted">'+data[target]['version']+'</span> '
               // Strip out hostname and filename from download url, to generate logfile
               var filename = data[target]['url'].split('/').pop().replace(/\.[^/.]+$/, "")
-
-              template +=     '[<a href="http://s3.amazonaws.com/julianightlies/logs/' + filename + '.log" '
-              template +=     'target="_blank">log</a>]&nbsp;&nbsp;'
-              template +=     '[<a id="' + id + '" href="/download/' + target + '" target="_blank">download</a>]'
+              if( filename.trim().length != 0 ) {
+                template +=     '[<a href="http://s3.amazonaws.com/julianightlies/logs/' + filename + '.log" '
+                template +=     'target="_blank">log</a>]&nbsp;&nbsp;'
+                template +=     '[<a id="' + id + '" href="/download/' + target + '" target="_blank">download</a>]'
+              }else{
+                template +=     '[<a href="http://s3.amazonaws.com/julianightlies/logs/' + target + '.log" '
+                template +=     'target="_blank">log</a>]'
+              }
               template +=   '</div>'
               template += '</div>'
               $('#container_nightly').append(template)
