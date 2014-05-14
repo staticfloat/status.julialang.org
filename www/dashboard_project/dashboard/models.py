@@ -27,6 +27,9 @@ class StableBuild(models.Model):
     # download URL
     url = models.TextField('Download URL')
 
+    def __unicode__(self):
+        return "Stable build link for %s"%(self.target if len(self.target) else "(no target)")
+
 
 # Environment for a codespeed build ("criid", "julia", etc...)
 class CodespeedEnvironment(models.Model):
