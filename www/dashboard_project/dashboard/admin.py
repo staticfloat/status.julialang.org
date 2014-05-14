@@ -5,6 +5,7 @@ class TravisBuildAdmin(admin.ModelAdmin):
 	list_display = ('commit', 'branch', 'result', 'time')
 
 admin.site.register(NightlyBuild)
+admin.site.register(StableBuild)
 admin.site.register(TravisBranch)
 admin.site.register(TravisBuild, TravisBuildAdmin)
 admin.site.register(CodespeedBuild)

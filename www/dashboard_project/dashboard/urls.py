@@ -19,4 +19,5 @@ urlpatterns = patterns('',
     url(r'^get/julia_version_status$', views.get_julia_version_status),
 
     url(r'^download/(.+)', views.get_latest),
+    url(r'^stable/(.+)', views.get_stable),
 )

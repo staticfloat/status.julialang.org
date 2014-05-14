@@ -7,7 +7,7 @@ class NightlyBuild(models.Model):
     # The last successful build
     time = models.DateTimeField('Last Successful build', default=now)
 
-    # The target this build is for ("OSX 10.7+ Nightly", "Ubuntu Nightly", etc...)
+    # The target this build is for ("osx10.7+", "win64", etc...)
     target = models.TextField('Target Executable')
 
     # The version string of this build
@@ -18,6 +18,14 @@ class NightlyBuild(models.Model):
 
     def __unicode__(self):
         return "Last build for %s"%(self.target if len(self.target) else "(no target)")
+
+
+class StableBuild(models.Model):
+    # The target this build is for ("osx10.7+", "win64", etc...)
+    target = models.TextField('Target Executable')
+
+    # download URL
+    url = models.TextField('Download URL')
 
 
 # Environment for a codespeed build ("criid", "julia", etc...)

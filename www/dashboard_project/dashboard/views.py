@@ -203,3 +203,9 @@ def get_latest(request, target):
 	if not len(nightly_builds):
 		return HttpResponse("No such build target \"%s\""%(target))
 	return HttpResponseRedirect(nightly_builds[0].url)
+
+def get_stable(request, target):
+	stable_builds = StableBuild.objects.filter(target=target)
+	if not len(stable_builds):
+		return HttpResponse("No such build target \"%s\""%(target))
+	return HttpResponseRedirect(stable_builds[0].url)
