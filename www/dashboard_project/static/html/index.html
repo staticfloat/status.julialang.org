@@ -4,7 +4,6 @@
     <title>Julia Ecosystem Status</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="static/css/bootstrap.min.css" rel="stylesheet" media="screen">
-    <link href="static/css/bootstrap-switch.min.css" rel="stylesheet" media="screen">
     <link href="static/css/jquery.jqplot.min.css" rel="stylesheet" media="screen">
     <style>
       .blankcell, .cell {
@@ -54,19 +53,6 @@
         padding: 0px 1px 0px 1px;
       }
 
-      /* shamelessly stolen from iaindunning.com */
-      .full_pass    { background-color: #55FF55; } /* Tests passing */
-      .full_fail    { background-color: #FF9922; } /* Tests failed */
-      .using_pass   { background-color: #AAAAFF; } /* Tests missing */
-      .using_fail   { background-color: #FF4444; } /* Package unloadable */
-      .not_possible { background-color: #AFAFAF; } /* Package excused */
-
-      .cell_using_fail   { background-color: #ffcccc; }
-      .cell_using_pass   { background-color: #ddddff; }
-      .cell_full_fail    { background-color: #ffddcc; }
-      .cell_full_pass    { background-color: #ddffdd; }
-      .cell_not_possible { background-color: #eee; }
-
       /* I don't like that dashed underline */
       abbr[title] {
         border-bottom: 0px;
@@ -79,7 +65,6 @@
     </style>
     <script src="static/js/jquery.min.js" type="text/javascript"></script>
     <script src="static/js/bootstrap.min.js" type="text/javascript"></script>
-    <script src="static/js/bootstrap-switch.min.js" type="text/javascript"></script>
     <script src="static/js/jquery.timeago.js" type="text/javascript"></script>
     <script src="static/js/jquery.jqplot.min.js" type="text/javascript"></script>
     <script src="static/js/jqplot/jqplot.pointLabels.min.js" type="text/javascript"></script>
@@ -144,31 +129,6 @@
         if( selector )
           return selector.replace(/[ +\/.]/g, '_')
         return selector
-      }
-
-      // The jvs object gotten below, through /get/julia_version_status
-      var jvs = {}
-      function get_curr_jlver() {
-        // 'true' means 'nightly'
-        if( $('#jlver_switch').bootstrapSwitch('state') )
-          return 'nightly'
-        return 'stable'
-      }
-
-      function get_other_jlver() {
-        if( $('#jlver_switch').bootstrapSwitch('state') )
-          return 'stable'
-        return 'nightly'
-      }
-
-      function update_section_counts() {
-        // Set the number of packages in each category
-        var types = ["full_pass", "full_fail", "using_pass", "using_fail", "not_possible"]
-        var curr_version = get_curr_jlver();
-        for( idx in types ) {
-          var count = $('#container_' + types[idx] + ' div.cell.'+curr_version+'_build').length
-          $('#' + types[idx] + '_count').html(count)
-        }
       }
 
       // Download new data from the site, write it out to the DOM
@@ -281,152 +241,9 @@
           $('#container_codespeed').html(template)
           $('#container_codespeed abbr.timeago').timeago()
         }))
-
-        // Get the last time we ran PackageEval
-        promises.push($.ajax('get/package_run').then(function( data ) {
-          // We're given a dict that has a single entry: date
-          $('abbr#last_package_run').attr('title', data['date'])
-          $('abbr#last_package_run').timeago()
-          if( data['date'].length )
-            $('#last_package_run_container').fadeIn()
-        }))
-
-        package_promise = $.ajax( 'get/package' )
-        jvs_promise = $.ajax( 'get/julia_version_status' )
-
-        // Finally, let's close out with Package statii
-        promises.push( $.when(package_promise, jvs_promise ).then(function( package_data_container, jvs_data_container ) {
-          jvs = jvs_data_container[0]
-
-          // We're given a dict indexed by name, sort ignoring case
-          data = package_data_container[0].sort(function( a, b ) {
-            return a['name'].toLowerCase().localeCompare(b['name'].toLowerCase());
-          })
-
-          for( idx in data ) {
-            d = data[idx]
-            id = 'package-' + sanitize(d['name']) + sanitize(d['jlver'])
-
-            // Is this package a build from nightly or stable julia?
-            var version_class = d['jlver'] == jvs['nightly'] ? "nightly_build" : "stable_build";
-
-            // Have we already added this particular package?
-            var div = $('#container_package').find('#' + id )
-
-            // If not, barf out the DOM elements we need
-            if( div.length == 0 ) {
-              template =  '<div id="' + id + '" class="cell '+version_class+'">'
-              template += '  <div style="margin-left: -12px; margin-right:0px" class="row">'
-              template += '    <div class="pkg-name col-xs-12"></div>'
-              template += '  </div>'
-              template += '  <div style="margin-left: 0px; margin-right:0px" class="row">'
-              template += '    <div class="pkg-details col-xs-8 bordered"></div>'
-              template += '    <div class="pkg-license col-xs-1 bordered"></div>'
-              template += '    <div class="pkg-pkgreq col-xs-1 bordered"></div>'
-              template += '    <div class="pkg-travis col-xs-1 bordered"></div>'
-              template += '  </div>'
-              template += '</div>'
-
-              // Append that template to the appropriate container, then update our div element accordingly
-              $('#container_' + d['status']).append(template)
-              div = $('#container_package').find('div#' + id)
-            }
-
-            // Now, update the above div with the new information stored in data
-            pkgname = $(div).find('.pkg-name')
-            short_sha = d['gitsha'].substring(0, 8)
-            url_split = d['url'].split('/')
-            owner = url_split[url_split.length-2]
-
-            pkgname_html  = '<a href="' + d['url'] + '">'
-            pkgname_html +=   d['name']
-            pkgname_html += '</a>'
-            pkgname_html += ' - '
-            pkgname_html += '<a href="' + d['url'] + '/tree/' + d['gitsha'] + '">'
-            pkgname_html +=   d['version'] + '/' + short_sha
-            pkgname_html += '</a>'
-            pkgname_html += ' ('
-            pkgname_html += '<abbr class="timeago" title="' + d['gitdate'] + '">'
-            pkgname_html +=   $.timeago.parse(d['gitdate']).toLocaleString()
-            pkgname_html += '</abbr>'
-            pkgname_html += ') - '
-            pkgname_html += '<a href="https://github.com/' + owner + '">'
-            pkgname_html +=   owner
-            pkgname_html += '</a>'
-
-            pkgname.html( pkgname_html )
-            $(div).removeClass("cell_full_pass cell_full_fail cell_using_pass cell_using_fail")
-            $(div).addClass('cell_' + d['status'])
-
-            details = $(div).find('.pkg-details')
-            details.html(d['details'])
-            details.removeClass("full_pass full_fail using_pass using_fail")
-            details.addClass(d['status'])
-
-            license = $(div).find('.pkg-license')
-            if ( d['licfile'] === '' ) {
-              license.text( d['license'] )
-              license.attr( 'title', 'No license file found')
-            } else {
-              // Found a license file, link to it
-              license.html('<a href="' + d['url'] + '/blob/master/' + d['licfile'] + '">' + d['license'] + '</a>')
-            }
-
-            license.removeClass("full_pass full_fail")
-            if( d['license'] != "Unknown" ) {
-              license.addClass("full_pass")
-            } else {
-              if ( d['licfile'] === '' ) {
-                // Found no license and no file
-                license.addClass("using_fail")
-              } else {
-                // License file, but empty or TBD probably
-                license.addClass("full_fail")
-                license.attr('title', 'Unrecognized license')
-              }
-            }
-
-            pkgreq = $(div).find('.pkg-pkgreq')
-            pkgreq.removeClass("full_pass full_fail")
-            if( d['pkgreq'] ) {
-              pkgreq.addClass("full_pass")
-              pkgreq.html('<a href="' + d['url'] + '/blob/master/REQUIRE">REQUIRE</a>')
-            } else {
-              pkgreq.addClass("full_fail")
-              pkgreq.html('<a href="' + d['url'] + '">REQUIRE</a>')
-            }
-
-            travis = $(div).find('.pkg-travis')
-            githubIndex = d['url'].indexOf("github.com/")
-            travis.removeClass("full_pass full_fail")
-            if( d['travis'] && githubIndex != -1 ) {
-              // Parse out the username and repo
-              userAndRepo = d['url'].substring( githubIndex+11, d['url'].length )
-
-              travis.html('<a href=https://travis-ci.org/' + userAndRepo + '>Travis</a>')
-              travis.addClass("full_pass")
-            } else {
-              travis.addClass("full_fail")
-              travis.text('Travis')
-              travis.attr('title', "Travis CI hasn't been set up for this package")
-            }
-          }
-
-          // Update section counts when we're done, and on every switch of the jlver_switch!
-          onSwitchChange();
-        }))
-
-        $('#jlver_switch').bootstrapSwitch();
-        $('#jlver_switch').on('switchChange', onSwitchChange );
         return promises;
       }
 
-      function onSwitchChange() {
-        update_section_counts();
-        $('#jlver').html("Julia version v" + jvs[get_curr_jlver()] ).fadeIn();
-        $('.'+get_curr_jlver()+'_build').show();
-        $('.'+get_other_jlver()+'_build').hide();
-      }
     </script>
   </head>
 
@@ -435,8 +252,7 @@
       <div class="page-header">
         <h1>Julia Ecosystem Status</h1>
         <p class="lead">This page tracks the status of various parts of the
-        <a href="http://julialang.org">Julia language</a> ecosystem;
-        from nightly binary builds of Julia to automated testing of packages.</p>
+        <a href="http://julialang.org">Julia language</a> ecosystem</p>
       </div>
 
       <h3>[<a class="collapser" href="" data-target="container_nightly">-</a>]
