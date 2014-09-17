@@ -11,12 +11,6 @@ urlpatterns = patterns('',
     url(r'^put/codespeed$', views.put_codespeed_build),
     url(r'^get/codespeed_envs$', views.get_codespeed_environments),
     url(r'^put/codespeed_env$', views.put_codespeed_environment),
-    url(r'^get/package$', views.get_package_builds),
-    url(r'^put/package$', views.put_package_build),
-    url(r'^get/package_run$', views.get_package_run),
-
-    url(r'^get/testlog/(\w+)/(.+)$', views.get_package_log ),
-    url(r'^get/julia_version_status$', views.get_julia_version_status),
 
     url(r'^download/(.+)', views.get_latest),
     url(r'^stable/(.+)', views.get_stable),

@@ -76,10 +76,6 @@
       a.collapser {
         text-decoration: none;
       }
-
-      .pkg-license { text-align: center; }
-      .pkg-pkgreq { text-align: center; }
-      .pkg-travis { text-align: center; }
     </style>
     <script src="static/js/jquery.min.js" type="text/javascript"></script>
     <script src="static/js/bootstrap.min.js" type="text/javascript"></script>
@@ -205,15 +201,10 @@
 
               template +=   '<div style="padding: 0px 0px 0px 0px" class="col-xs-4 text-right">'
               template +=     '<span class="text-muted">'+data[target]['version']+'</span> '
-              // Strip out hostname and filename from download url, to generate logfile
-              var filename = data[target]['url'].split('/').pop().replace(/\.[^/.]+$/, "")
-              if( filename.trim().length != 0 ) {
-                template +=     '[<a href="http://s3.amazonaws.com/julianightlies/logs/' + filename + '.log" '
-                template +=     'target="_blank">log</a>]&nbsp;&nbsp;'
+
+              // If we have a download link, show it!
+              if( data[target]['url'].trim().length != 0 ) {
                 template +=     '[<a id="' + id + '" href="/download/' + target + '" target="_blank">download</a>]'
-              }else{
-                template +=     '[<a href="http://s3.amazonaws.com/julianightlies/logs/' + target + '.log" '
-                template +=     'target="_blank">log</a>]'
               }
               template +=   '</div>'
               template += '</div>'
@@ -448,7 +439,9 @@
         from nightly binary builds of Julia to automated testing of packages.</p>
       </div>
 
-      <h3>[<a class="collapser" href="" data-target="container_nightly">-</a>] Nightly Builds</h3>
+      <h3>[<a class="collapser" href="" data-target="container_nightly">-</a>]
+      <a href="http://buildbot.e.ip.saba.us:8010/waterfall?category=Packaging&reload=60">Nightly Builds</a>
+      </h3>
       <div id="container_nightly">
       </div>
 
@@ -464,92 +457,6 @@
         <a href="http://speed.julialang.org">Codespeed</a> builds
       </h3>
       <div id="container_codespeed">
-      </div>
-
-      <h3>
-        [<a class="collapser" href="" data-target="container_package">-</a>] Package tests
-        <span id="last_package_run_container" class="text-muted"
-              style="font-size:smaller; display:none; padding-left:4px;">
-          (Last run: <abbr id="last_package_run" class="timeago" style="color:#999"></abbr>)
-        </span>
-
-        <span style="float:right;padding-right:10px">
-          <input type="checkbox" id="jlver_switch" checked data-on-text="Nightly" data-off-text="Stable">
-        </span>
-      </h3>
-
-      <div id="container_package">
-        <span id="jlver" class="text-muted" style="float:right;padding-right:10px;display:none">
-        </span>
-        <h5>Layout legend:</h5>
-
-        <div class="cell">
-          <div style="margin-left: 0px; margin-right:0px" class="row">
-            <div class="bordered col-xs-11">
-              Package name - version/git SHA (date) - author/organization
-            </div>
-          </div>
-          <div style="margin-left: 0px; margin-right:0px" class="row">
-            <div class="col-xs-8 bordered">
-              Detailed Description
-            </div>
-            <div class="col-xs-1 bordered pkg-license">
-              License
-            </div>
-            <div class="col-xs-1 bordered pkg-pkgreq">
-              <span title="Package requirements">REQUIRE</span>
-            </div>
-            <div class="col-xs-1 bordered pkg-travis">
-              <span title="Travis continuous integration">Travis</span>
-            </div>
-          </div>
-        </div>
-
-        <h4 class="cell cell_full_pass">
-          [<a class="collapser" href="" data-target="container_full_pass">+</a>]
-          Tests Passing (<span id="full_pass_count">0</span>)
-          <span style="font-size:smaller;float:right">
-            (<span style="font-family:courier">using $pkg</span> passes, all tests pass)
-          </span>
-        </h4>
-        <div id="container_full_pass" class="collapsable">
-        </div>
-
-        <h4 class="cell cell_full_fail">
-          [<a class="collapser" href="" data-target="container_full_fail">+</a>]
-          Tests Failing (<span id="full_fail_count">0</span>)
-          <span style="font-size:smaller;float:right">
-            (<span style="font-family:courier">using $pkg</span> passes, tests fail)
-          </span>
-        </h4>
-        <div id="container_full_fail" class="collapsable">
-        </div>
-
-        <h4 class="cell cell_using_pass">
-          [<a class="collapser" href="" data-target="container_using_pass">+</a>]
-          Tests Missing (<span id="using_pass_count">0</span>)
-          <span style="font-size:smaller;float:right">
-            (<span style="font-family:courier">using $pkg</span> passes, tests missing)
-          </span>
-        </h4>
-        <div id="container_using_pass" class="collapsable">
-        </div>
-
-        <h4 class="cell cell_using_fail">
-          [<a class="collapser" href="" data-target="container_using_fail">+</a>]
-          Package Unloadable (<span id="using_fail_count">0</span>)
-          <span style="font-size:smaller;float:right">
-          (<span style="font-family:courier">using $pkg</span> fails)</span>
-        </h4>
-        <div id="container_using_fail" class="collapsable">
-        </div>
-
-        <h4 class="cell cell_not_possible">
-          [<a class="collapser" href="" data-target="container_not_possible">+</a>]
-          Package Excused (<span id="not_possible_count">0</span>)
-        </h4>
-        <div id="container_not_possible" class="collapsable">
-        </div>
       </div>
     </div>
   </body>
