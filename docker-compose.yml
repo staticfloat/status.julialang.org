@@ -1,0 +1,49 @@
+version: '2.3'
+
+services:
+    statping:
+        image: statping/statping
+        restart: unless-stopped
+        volumes:
+            - statping_data:/app
+        environment:
+            DB_CONN: sqlite
+        expose:
+            - 8080
+
+    frontend:
+        image: staticfloat/nginx-certbot
+        restart: unless-stopped
+        environment:
+            CERTBOT_EMAIL: staticfloat@gmail.com
+            # Allow us to template the $STORAGE_SERVER_FQDN value within the nginx config
+            FQDN: status.julialang.org
+            ENVSUBST_VARS: FQDN
+        ports:
+            - 80:80/tcp
+            - 443:443/tcp
+        depends_on:
+            - statping
+        volumes:
+            # Mount in our nginx config
+            - ./status.julialang.org.conf:/etc/nginx/user.conf.d/status.julialang.org.conf
+            - ./docs.sciml.ai.conf:/etc/nginx/user.conf.d/docs.sciml.ai.conf
+            # Keep SSL certificates permanently
+            - letsencrypt:/etc/letsencrypt
+        labels:
+            com.centurylinklabs.watchtower.enable: true
+
+    # Auto-reload docker containers when their images are updated
+    watchtower:
+        image: containrrr/watchtower
+        restart: unless-stopped
+        volumes:
+            # Mount the docker socket
+            - /var/run/docker.sock:/var/run/docker.sock
+            # Also mount docker login credentials
+            - ${HOME}/.docker/config.json:/config.json:ro
+        command: --cleanup --label-enable
+
+volumes:
+  statping_data:
+  letsencrypt:
