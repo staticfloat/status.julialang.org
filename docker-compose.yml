@@ -42,8 +42,6 @@ services:
         volumes:
             # Mount the docker socket
             - /var/run/docker.sock:/var/run/docker.sock
-            # Also mount docker login credentials
-            - ${HOME}/.docker/config.json:/config.json:ro
         command: --cleanup --label-enable
 
 volumes:
