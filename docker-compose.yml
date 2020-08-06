@@ -10,6 +10,8 @@ services:
             DB_CONN: sqlite
         expose:
             - 8080
+        # Limit statping to using 100MB of RAM
+        mem_limit: 104857600
 
     frontend:
         image: staticfloat/nginx-certbot
