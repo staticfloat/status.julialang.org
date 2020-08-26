@@ -12,6 +12,8 @@ services:
             - 8080
         # Limit statping to using 100MB of RAM
         mem_limit: 104857600
+        labels:
+            com.centurylinklabs.watchtower.enable: true
 
     frontend:
         image: staticfloat/nginx-certbot
