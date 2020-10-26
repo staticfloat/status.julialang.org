@@ -32,7 +32,6 @@ services:
             # Mount in our nginx config
             - ./status.julialang.org.conf:/etc/nginx/user.conf.d/status.julialang.org.conf
             - ./docs.sciml.ai.conf:/etc/nginx/user.conf.d/docs.sciml.ai.conf
-            - ./slackinvite.julialang.org.conf:/etc/nginx/user.conf.d/slackinvite.julialang.org.conf
             # Keep SSL certificates permanently
             - letsencrypt:/etc/letsencrypt
         labels:
